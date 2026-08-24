@@ -19,21 +19,32 @@ export const generateSlug = () => {
 export const createRoom = async (roomName, password = null, ttlSeconds = 3600) => {
   try {
     let slug;
-    let attempts = 0;
-    const maxAttempts = 5;
-    let exists = true;
-
-    while (exists && attempts < maxAttempts) {
-      slug = generateSlug();
+    if (roomName && typeof roomName === 'string' && roomName.trim() !== '') {
+      slug = roomName.trim().toLowerCase();
       const checkKey = `room:${slug}:meta`;
       const res = await redisClient.exists(checkKey);
-      exists = res === 1 || res === true;
-      attempts++;
-    }
+      const exists = res === 1 || res === true;
+      if (exists) {
+        logger.error({ roomName: slug }, 'Room name already exists');
+        throw new Error('ROOM_ALREADY_EXISTS');
+      }
+    } else {
+      let attempts = 0;
+      const maxAttempts = 5;
+      let exists = true;
 
-    if (exists) {
-      logger.error('Failed to generate a unique room slug after 5 attempts');
-      throw new Error('SLUG_GENERATION_FAILED');
+      while (exists && attempts < maxAttempts) {
+        slug = generateSlug();
+        const checkKey = `room:${slug}:meta`;
+        const res = await redisClient.exists(checkKey);
+        exists = res === 1 || res === true;
+        attempts++;
+      }
+
+      if (exists) {
+        logger.error('Failed to generate a unique room slug after 5 attempts');
+        throw new Error('SLUG_GENERATION_FAILED');
+      }
     }
 
     const metaKey = `room:${slug}:meta`;

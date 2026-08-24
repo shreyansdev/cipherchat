@@ -43,31 +43,43 @@ describe('roomService', () => {
   });
 
   describe('createRoom', () => {
-    it('stores meta hash with all required fields', async () => {
+    it('stores meta hash with all required fields for provided roomName', async () => {
       vi.mocked(redisClient.exists).mockResolvedValue(0);
       
-      const result = await roomService.createRoom('test-room', 'password123', 3600);
+      const result = await roomService.createRoom('cute-cabin-2669', 'password123', 3600);
 
       expect(result.success).toBe(true);
-      expect(result.roomName).toMatch(/^[a-z]+-[a-z]+-[0-9]{4}$/);
+      expect(result.roomName).toBe('cute-cabin-2669');
       expect(mockRedisMulti.hSet).toHaveBeenCalled();
       const call = mockRedisMulti.hSet.mock.calls[0];
-      expect(call[0]).toBe(`room:${result.roomName}:meta`);
-      expect(call[1].name).toBe(result.roomName);
+      expect(call[0]).toBe('room:cute-cabin-2669:meta');
+      expect(call[1].name).toBe('cute-cabin-2669');
       expect(call[1].maxUsers).toBe('50');
       // Verify it's a bcrypt hash (starts with $2)
       expect(call[1].passwordHash).toMatch(/^\$2[ayb]\$.{56}$/);
     });
 
+    it('generates slug if roomName is not provided', async () => {
+      vi.mocked(redisClient.exists).mockResolvedValue(0);
+      const result = await roomService.createRoom(null, null, 3600);
+      expect(result.success).toBe(true);
+      expect(result.roomName).toMatch(/^[a-z]+-[a-z]+-[0-9]{4}$/);
+    });
+
     it('calls EXPIRE on room:{slug}:meta with the correct TTL seconds', async () => {
       vi.mocked(redisClient.exists).mockResolvedValue(0);
       const result = await roomService.createRoom('ttl-room', null, 7200);
-      expect(mockRedisMulti.expire).toHaveBeenCalledWith(`room:${result.roomName}:meta`, 7200);
+      expect(mockRedisMulti.expire).toHaveBeenCalledWith('room:ttl-room:meta', 7200);
     });
 
     it('rejects duplicate slugs (fails after 5 collision attempts)', async () => {
       vi.mocked(redisClient.exists).mockResolvedValue(1);
-      await expect(roomService.createRoom('existing-room')).rejects.toThrow('SLUG_GENERATION_FAILED');
+      await expect(roomService.createRoom()).rejects.toThrow('SLUG_GENERATION_FAILED');
+    });
+
+    it('rejects duplicate room if specified roomName already exists', async () => {
+      vi.mocked(redisClient.exists).mockResolvedValue(1);
+      await expect(roomService.createRoom('existing-room')).rejects.toThrow('ROOM_ALREADY_EXISTS');
     });
 
     it('throws original error if exception happens', async () => {

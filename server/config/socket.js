@@ -1,5 +1,5 @@
 import { storeMessage, getRoomMessages } from '../services/messageService.js';
-import { addUserToRoom, removeUserFromRoom, getRoomUsers } from '../services/roomService.js';
+import { addUserToRoom, removeUserFromRoom, getRoomUsers, deleteRoom } from '../services/roomService.js';
 import { registerSession, removeSession, getUserCount } from '../services/presenceService.js';
 import DOMPurify from 'isomorphic-dompurify';
 import logger from '../lib/logger.js';
@@ -10,6 +10,20 @@ import redisClient from './redis.js';
 const messageRateLimits = new Map();
 const MESSAGE_RATE_LIMIT = parseInt(process.env.SOCKET_MSG_RATE_PER_SECOND) || 5; 
 const MESSAGE_RATE_WINDOW = 1000; // 1 second
+
+// Empty room grace period deletion management
+export const emptyRoomTimers = new Map();
+const DEFAULT_EMPTY_ROOM_GRACE_PERIOD_MS = parseInt(process.env.EMPTY_ROOM_GRACE_PERIOD_SECONDS || '120', 10) * 1000;
+
+export const getEmptyRoomGracePeriodMs = () => {
+  if (process.env.TEST_GRACE_PERIOD_MS) {
+    return parseInt(process.env.TEST_GRACE_PERIOD_MS, 10);
+  }
+  if (process.env.EMPTY_ROOM_GRACE_PERIOD_MS) {
+    return parseInt(process.env.EMPTY_ROOM_GRACE_PERIOD_MS, 10);
+  }
+  return DEFAULT_EMPTY_ROOM_GRACE_PERIOD_MS;
+};
 
 const checkMessageRateLimit = (userId) => {
   const now = Date.now();
@@ -35,6 +49,11 @@ let pubClient;
 let subClient;
 
 export const closeSocketServices = async () => {
+  for (const timer of emptyRoomTimers.values()) {
+    clearTimeout(timer);
+  }
+  emptyRoomTimers.clear();
+
   const promises = [];
   if (pubClient) {
     promises.push(pubClient.quit().catch(err => logger.error(err, 'Error quitting pubClient')));
@@ -211,6 +230,13 @@ export const setupSocketHandlers = async (io) => {
         // Join the Socket.IO room
         socket.join(sanitizedRoomName);
         
+        // Cancel empty room grace period deletion if user joined
+        if (emptyRoomTimers.has(sanitizedRoomName)) {
+          clearTimeout(emptyRoomTimers.get(sanitizedRoomName));
+          emptyRoomTimers.delete(sanitizedRoomName);
+          logger.info({ roomName: sanitizedRoomName }, 'User rejoined empty room. Cancelled grace period deletion timer.');
+        }
+        
         // Store user info in socket and register session
         socket.userData = { roomName: sanitizedRoomName, userName: sanitizedUserName, userId: sanitizedUserId };
         await registerSession(socket.id, socket.userData);
@@ -315,15 +341,19 @@ export const setupSocketHandlers = async (io) => {
         }, 'Relaying encrypted message');
         
         // Prevent Prototype Pollution / Property Injection: Construct clean message object
+        const messageId = (typeof message.id === 'string' && message.id.trim() !== '')
+          ? DOMPurify.sanitize(message.id)
+          : `msg-${Date.now()}-${socket.userData.userId}`;
+
         const relayedMessage = {
-          id: `msg-${Date.now()}-${socket.userData.userId}`,
+          id: messageId,
           user: {
             id: socket.userData.userId,
             name: socket.userData.userName
           },
           ciphertext: message.ciphertext,
           iv: message.iv,
-          timestamp: Date.now(),
+          timestamp: typeof message.timestamp === 'number' ? message.timestamp : Date.now(),
           type: 'user',
           status: 'delivered',
         };
@@ -415,6 +445,31 @@ export const setupSocketHandlers = async (io) => {
             roomName, 
             remainingUsers: users.length 
           }, 'User left room');
+
+          // If room is now empty, schedule grace period deletion
+          if (users.length === 0) {
+            if (!emptyRoomTimers.has(roomName)) {
+              const graceMs = getEmptyRoomGracePeriodMs();
+              logger.info({ roomName, gracePeriodMs: graceMs }, 'Room is now empty. Starting grace period timer for auto-deletion.');
+
+              const timer = setTimeout(async () => {
+                try {
+                  emptyRoomTimers.delete(roomName);
+                  const currentUsers = await getRoomUsers(roomName);
+                  if (currentUsers.length === 0) {
+                    logger.info({ roomName }, 'Room remained empty after grace period. Deleting room data from Redis.');
+                    await deleteRoom(roomName);
+                  } else {
+                    logger.info({ roomName, userCount: currentUsers.length }, 'Room is no longer empty. Grace period deletion skipped.');
+                  }
+                } catch (err) {
+                  logger.error({ err, roomName }, 'Error during empty room grace period deletion');
+                }
+              }, graceMs);
+
+              emptyRoomTimers.set(roomName, timer);
+            }
+          }
         }
       } catch (error) {
         logger.error(error, 'Error handling disconnect');

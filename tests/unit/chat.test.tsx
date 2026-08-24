@@ -101,6 +101,45 @@ describe('Chat Components Integration Tests', () => {
       expect(state.messages[0]).toEqual(mockMessage);
     });
 
+    it('Dispatching ADD_MESSAGE with matching id updates the existing message without duplicating', () => {
+      const state1 = chatReducer(initialState, { type: 'ADD_MESSAGE', payload: { ...mockMessage, status: 'sending' } });
+      expect(state1.messages).toHaveLength(1);
+      expect(state1.messages[0].status).toBe('sending');
+
+      const state2 = chatReducer(state1, { type: 'ADD_MESSAGE', payload: { ...mockMessage, status: 'delivered' } });
+      expect(state2.messages).toHaveLength(1);
+      expect(state2.messages[0].status).toBe('delivered');
+    });
+
+    it('Dispatching ADD_MESSAGE with matching user ID + ciphertext + iv deduplicates optimistic message', () => {
+      const optimisticMsg: Message = {
+        id: 'opt-123',
+        user: mockUser,
+        ciphertext: 'cipher-abc',
+        iv: 'iv-123',
+        text: 'Hello',
+        timestamp: 1000,
+        type: 'user',
+        status: 'sending',
+      };
+      const serverBroadcastMsg: Message = {
+        id: 'srv-456',
+        user: mockUser,
+        ciphertext: 'cipher-abc',
+        iv: 'iv-123',
+        timestamp: 1005,
+        type: 'user',
+        status: 'delivered',
+      };
+
+      const state1 = chatReducer(initialState, { type: 'ADD_MESSAGE', payload: optimisticMsg });
+      expect(state1.messages).toHaveLength(1);
+
+      const state2 = chatReducer(state1, { type: 'ADD_MESSAGE', payload: serverBroadcastMsg });
+      expect(state2.messages).toHaveLength(1);
+      expect(state2.messages[0].status).toBe('delivered');
+    });
+
     it('Dispatching CLEAR_ROOM resets messages, users, and roomSlug to initial state', () => {
       const dirtyState: ChatState = {
         users: [mockUser],
@@ -240,7 +279,7 @@ describe('Chat Components Integration Tests', () => {
       vi.clearAllMocks();
     });
 
-    it('Submitting with an empty room name shows a validation error', async () => {
+    it('Joining with an empty room name shows a validation error', async () => {
       const user = userEvent.setup();
       render(
         <MemoryRouter>
@@ -248,10 +287,10 @@ describe('Chat Components Integration Tests', () => {
         </MemoryRouter>
       );
 
-      await user.click(screen.getByText(/\[CREATE SECURE ROOM\]/));
+      await user.click(screen.getByText(/\[JOIN EXISTING ROOM\]/));
       const nameInput = screen.getByLabelText(/> Anonymous Alias/i);
       await user.type(nameInput, 'Alice');
-      const submitBtn = screen.getByText(/\[INITIALIZE ROOM\]/);
+      const submitBtn = screen.getByText(/\[CONNECT NOW\]/);
       await user.click(submitBtn);
 
       expect(await screen.findByText(/\[ERROR\] Room name cannot be empty./)).toBeInTheDocument();
@@ -266,8 +305,8 @@ describe('Chat Components Integration Tests', () => {
       );
 
       await user.click(screen.getByText(/\[CREATE SECURE ROOM\]/));
-      await user.type(screen.getByLabelText(/> Room Identifier/i), 'secret-room');
-      await user.type(screen.getByLabelText(/> Anonymous Alias/i), 'Alice');
+      const nameInput = screen.getByLabelText(/> Anonymous Alias/i);
+      await user.type(nameInput, 'Alice');
       const passwordSwitch = screen.getByLabelText(/Password Protection/i);
       await user.click(passwordSwitch);
       const passwordInput = screen.getByLabelText(/> Encryption Key/i);
@@ -278,7 +317,7 @@ describe('Chat Components Integration Tests', () => {
       expect(await screen.findByText(/\[ERROR\] Password must be at least 8 characters long./)).toBeInTheDocument();
     });
 
-    it('On valid submit, the api.createRoom is called with correct payload', async () => {
+    it('On valid submit, the api.createRoom is called with auto-generated non-editable room slug', async () => {
       const user = userEvent.setup();
       vi.mocked(api.createRoom).mockResolvedValue({ success: true, roomName: 'valid-room' });
 
@@ -289,12 +328,16 @@ describe('Chat Components Integration Tests', () => {
       );
 
       await user.click(screen.getByText(/\[CREATE SECURE ROOM\]/));
-      await user.type(screen.getByLabelText(/> Room Identifier/i), 'valid-room');
-      await user.type(screen.getByLabelText(/> Anonymous Alias/i), 'Alice');
+      const roomInput = screen.getByLabelText(/> Room Identifier/i);
+      expect(roomInput).toHaveAttribute('readonly');
+      expect(roomInput).toHaveValue();
+
+      const nameInput = screen.getByLabelText(/> Anonymous Alias/i);
+      await user.type(nameInput, 'Alice');
       const submitBtn = screen.getByText(/\[INITIALIZE ROOM\]/);
       await user.click(submitBtn);
 
-      expect(api.createRoom).toHaveBeenCalledWith('valid-room', undefined, 3600);
+      expect(api.createRoom).toHaveBeenCalledWith(expect.any(String), undefined, 3600);
     });
   });
 });

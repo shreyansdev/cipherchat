@@ -46,6 +46,9 @@ router.post('/create', async (req, res) => {
     logger.info({ roomName: result.roomName }, 'Room created via API');
     res.json({ success: true, roomName: result.roomName });
   } catch (error) {
+    if (error.message === 'ROOM_ALREADY_EXISTS') {
+      return res.status(409).json({ error: 'Room already exists' });
+    }
     if (error.message === 'SLUG_GENERATION_FAILED') {
       logger.error(error, 'Slug generation failed after max retries');
       return res.status(503).json({ error: 'SLUG_GENERATION_FAILED' });

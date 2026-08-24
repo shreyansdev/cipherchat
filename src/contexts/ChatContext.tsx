@@ -39,11 +39,26 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
         }
       }
       // Prevent duplicate user messages by ID
-      if (state.messages.find(m => m.id === action.payload.id)) {
+      if (state.messages.some(m => m.id === action.payload.id)) {
         return {
           ...state,
-          messages: state.messages.map(m => m.id === action.payload.id ? action.payload : m)
+          messages: state.messages.map(m => m.id === action.payload.id ? { ...m, ...action.payload } : m)
         };
+      }
+      // Prevent duplicate user messages by sender ID + ciphertext + iv (if ID differed between optimistic and server)
+      if (action.payload.type === 'user' && action.payload.ciphertext && action.payload.iv) {
+        const existingIdx = state.messages.findIndex(
+          m => m.type === 'user' &&
+               m.user?.id === action.payload.user?.id &&
+               m.ciphertext === action.payload.ciphertext &&
+               m.iv === action.payload.iv
+        );
+        if (existingIdx !== -1) {
+          return {
+            ...state,
+            messages: state.messages.map((m, idx) => idx === existingIdx ? { ...m, ...action.payload } : m)
+          };
+        }
       }
       return { ...state, messages: [...state.messages, action.payload] };
     case 'REMOVE_MESSAGE':

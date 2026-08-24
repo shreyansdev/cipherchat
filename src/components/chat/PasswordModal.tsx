@@ -3,7 +3,7 @@ import Dialog from '../ui/Dialog';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Label from '../ui/Label';
-import { Lock, RefreshCw, KeyRound } from 'lucide-react';
+import { Lock, RefreshCw, KeyRound, Eye, EyeOff } from 'lucide-react';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ interface PasswordModalProps {
 
 const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onSubmit, isLoading, error, rateLimitSeconds = 0 }) => {
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,15 +47,26 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onSubmit
           <Label htmlFor="room-password" className="text-xs text-cyber-purple uppercase tracking-wider">
             &gt; Encryption Key
           </Label>
-          <Input
-            id="room-password"
-            type="password"
-            value={password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            className="bg-[#080b10]/80 border-purple-500/30 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-white rounded-xl"
-            autoFocus
-          />
+          <div className="relative">
+            <Input
+              id="room-password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              className="bg-[#080b10]/80 border-purple-500/30 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-white pr-10 rounded-xl"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors p-1"
+              title={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
 
         {localError && (
