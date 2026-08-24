@@ -7,32 +7,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules/
-dist
-dist-ssr
+server/node_modules/
+
+# Production build artifacts
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
+# Editor & OS files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables & secrets (keep .env.example)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 server/.env
+server/.env.local
+server/.env.*.local
 
-# Test and coverage artifacts
+# Test & coverage artifacts
 coverage/
 playwright-report/
 test-results/
+blob-report/
 *.zip
+
+# AI Agent / CLI temporary artifacts
+.gemini/
+.system_generated/
+scratch/
