@@ -1,6 +1,6 @@
 # CipherChat — Zero-Knowledge Ephemeral Chat
 
-[![Version](https://img.shields.io/badge/version-2.4_LTS-00f0ff.svg?style=flat-square)](https://github.com/)
+[![Version](https://img.shields.io/badge/version-2.4_LTS-00f0ff.svg?style=flat-square)](https://github.com/shreyansdev/cipherchat)
 [![License](https://img.shields.io/badge/license-MIT-00ff66.svg?style=flat-square)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-20_LTS-339933.svg?style=flat-square&logo=node.js)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB.svg?style=flat-square&logo=react)](https://react.dev/)
@@ -184,7 +184,7 @@ cipherchat/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/cipherchat.git
+   git clone https://github.com/shreyansdev/cipherchat.git
    cd cipherchat
    ```
 
