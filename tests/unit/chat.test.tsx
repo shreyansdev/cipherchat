@@ -35,6 +35,20 @@ vi.mock('lucide-react', () => ({
   WifiOff: () => <span data-testid="wifi-off-icon" />,
   RefreshCw: () => <span data-testid="refresh-icon" />,
   LogOut: () => <span data-testid="logout-icon" />,
+  Sparkles: () => <span data-testid="sparkles-icon" />,
+  Zap: () => <span data-testid="zap-icon" />,
+  Copy: () => <span data-testid="copy-icon" />,
+  FileText: () => <span data-testid="file-text-icon" />,
+  Download: () => <span data-testid="download-icon" />,
+  Smile: () => <span data-testid="smile-icon" />,
+  Paperclip: () => <span data-testid="paperclip-icon" />,
+  X: () => <span data-testid="x-icon" />,
+  Send: () => <span data-testid="send-icon" />,
+  Users: () => <span data-testid="users-icon" />,
+  Circle: () => <span data-testid="circle-icon" />,
+  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+  Menu: () => <span data-testid="menu-icon" />,
+  AlertTriangle: () => <span data-testid="alert-triangle-icon" />,
 }));
 
 // Mocking crypto functions

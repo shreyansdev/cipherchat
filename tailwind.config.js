@@ -56,8 +56,17 @@ export default {
           cyan: "hsl(var(--cyber-cyan))",
           purple: "hsl(var(--cyber-purple))",
           red: "hsl(var(--cyber-red))",
+          amber: "hsl(var(--cyber-amber))",
           terminal: "hsl(var(--terminal-green))",
+          obsidian: "#080b10",
+          card: "rgba(13, 20, 32, 0.8)",
         },
+      },
+      boxShadow: {
+        'cyber-green': '0 0 20px rgba(0, 255, 101, 0.35)',
+        'cyber-cyan': '0 0 20px rgba(0, 240, 255, 0.35)',
+        'cyber-card': '0 0 35px rgba(0, 240, 255, 0.10)',
+        'cyber-purple': '0 0 20px rgba(168, 85, 247, 0.35)',
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -3,6 +3,7 @@ import Dialog from '../ui/Dialog';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Label from '../ui/Label';
+import { Lock, RefreshCw, KeyRound } from 'lucide-react';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -36,34 +37,51 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onSubmit
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title="[PASSWORD REQUIRED]">
       <form onSubmit={handleSubmit} className="space-y-4 font-mono">
-        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-          &gt; Authentication needed for this encrypted channel.
-        </p>
+        <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-300 text-xs">
+          <KeyRound className="h-4 w-4 text-purple-400 flex-shrink-0" />
+          <span>This ephemeral channel is password protected with AES-256 encryption.</span>
+        </div>
+
         <div className="space-y-2">
-          <Label htmlFor="room-password" className="text-[10px] text-cyber-purple uppercase">Encryption Key</Label>
+          <Label htmlFor="room-password" className="text-xs text-cyber-purple uppercase tracking-wider">
+            &gt; Encryption Key
+          </Label>
           <Input
             id="room-password"
             type="password"
             value={password}
             onChange={handleChange}
             placeholder="••••••••"
-            className="bg-input/50 border-primary/30 focus:border-primary text-cyber-terminal"
+            className="bg-[#080b10]/80 border-purple-500/30 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-white rounded-xl"
             autoFocus
           />
         </div>
+
         {localError && (
-          <p className="text-[10px] text-destructive uppercase animate-pulse">
+          <p className="text-xs text-destructive uppercase animate-pulse p-2.5 bg-destructive/10 border border-destructive/30 rounded-xl">
             [ERROR] {rateLimitSeconds > 0 && localError.includes('Too many attempts')
               ? `Too many attempts. Please wait ${rateLimitSeconds} seconds.`
               : localError}
           </p>
         )}
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} className="text-xs">
+
+        <div className="flex justify-end gap-3 pt-3 border-t border-cyan-500/20">
+          <Button type="button" variant="secondary" onClick={onClose} className="text-xs rounded-xl bg-[#080b10] hover:bg-[#080b10]/80 text-slate-300 border border-cyan-500/30">
             [CANCEL]
           </Button>
-          <Button type="submit" disabled={isLoading || !password} className="text-xs">
-            {isLoading ? '[VERIFYING...]' : '[DECRYPT & JOIN]'}
+          <Button 
+            type="submit" 
+            disabled={isLoading || !password} 
+            className="text-xs rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/50 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all font-bold"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-1.5">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                [VERIFYING...]
+              </span>
+            ) : (
+              '[DECRYPT & JOIN]'
+            )}
           </Button>
         </div>
       </form>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Message, User } from '../../types';
-import { Terminal, Check, CheckCheck } from 'lucide-react';
+import { Terminal, Check, CheckCheck, Lock, FileText, Download } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { isSafeUrl } from '../../lib/utils';
 
@@ -23,10 +23,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
 
   const getUserColor = (userId: string) => {
     const colors = [
-      'text-cyber-green',
-      'text-cyber-cyan',
-      'text-cyber-purple',
-      'text-yellow-400',
+      'text-emerald-400',
+      'text-cyan-400',
+      'text-purple-400',
+      'text-amber-400',
       'text-pink-400',
       'text-blue-400',
     ];
@@ -37,16 +37,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
   if (isSystem) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
-        className="flex justify-center"
+        className="flex justify-center my-2"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/50 border border-border/50 rounded-full text-xs font-mono text-muted-foreground">
-          <Terminal className="h-3 w-3 text-cyber-cyan" />
-          <span>{message.text}</span>
-          <span className="text-[10px] opacity-50">{formatTime(message.timestamp)}</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#080b10]/80 border border-cyan-500/25 rounded-full text-xs font-mono text-slate-300 shadow-[0_0_15px_rgba(0,240,255,0.08)]">
+          <Terminal className="h-3.5 w-3.5 text-cyber-cyan animate-pulse" />
+          <span className="text-slate-300">{message.text}</span>
+          <span className="text-[10px] text-muted-foreground font-mono">[{formatTime(message.timestamp)}]</span>
         </div>
       </motion.div>
     );
@@ -54,70 +54,75 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: isCurrentUser ? 20 : -20 }}
+      initial={{ opacity: 0, x: isCurrentUser ? 15 : -15 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} my-1`}
     >
-      <div className={`max-w-[75%] ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+      <div className={`max-w-[85%] sm:max-w-[75%] ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         {!isCurrentUser && (
-          <div className={`text-xs font-mono font-bold ${getUserColor(message.user.id)}`}>
-            {message.user.name}
+          <div className="flex items-center gap-1.5 px-1">
+            <span className={`text-xs font-mono font-bold ${getUserColor(message.user.id)}`}>
+              {message.user.name}
+            </span>
+            <span className="text-[9px] text-slate-500 font-mono">PEER</span>
           </div>
         )}
         <div
-          className={`px-4 py-2.5 rounded-lg font-mono text-sm relative ${
+          className={`px-4 py-3 rounded-2xl font-mono text-sm relative transition-all ${
             isCurrentUser
-              ? 'bg-primary/20 border border-primary/40 text-cyber-terminal shadow-[0_0_10px_rgba(0,255,65,0.1)]'
-              : 'bg-card/80 border border-border/50 text-cyber-terminal/90'
+              ? 'bg-gradient-to-br from-emerald-500/15 to-cyan-500/10 border border-emerald-500/40 text-slate-100 shadow-[0_0_20px_rgba(0,255,101,0.1)] rounded-br-sm'
+              : 'bg-[#0d1420]/85 border border-cyan-500/20 text-slate-200 shadow-[0_0_20px_rgba(0,240,255,0.05)] rounded-bl-sm'
           }`}
         >
-          {/* Media content — URLs are validated to block javascript: / data: schemes */}
+          {/* Media content */}
           {message.mediaUrl && message.mediaType === 'image' && isSafeUrl(message.mediaUrl) && (
-            <div className="mb-2">
+            <div className="mb-2.5 overflow-hidden rounded-xl border border-cyan-500/30">
               <img
                 src={message.mediaUrl}
                 alt={message.fileName || 'Shared image'}
-                className="max-w-full rounded border border-primary/30 cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ maxHeight: '300px' }}
+                className="max-w-full rounded-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+                style={{ maxHeight: '280px' }}
                 onClick={() => window.open(message.mediaUrl, '_blank')}
               />
             </div>
           )}
           {message.mediaUrl && message.mediaType === 'file' && isSafeUrl(message.mediaUrl) && (
-            <div className="mb-2 flex items-center gap-2 p-2 bg-background/50 rounded border border-primary/20">
-              <Terminal className="h-4 w-4 text-cyber-green" />
+            <div className="mb-2.5 flex items-center gap-2.5 p-3 bg-[#080b10]/70 rounded-xl border border-cyan-500/30 group hover:border-cyan-400 transition-colors">
+              <FileText className="h-4 w-4 text-cyber-cyan flex-shrink-0" />
               <a
                 href={message.mediaUrl}
                 download={message.fileName}
-                className="text-xs text-cyber-green hover:underline flex-1 truncate"
+                className="text-xs text-cyber-cyan hover:underline flex-1 truncate font-semibold"
               >
                 {message.fileName} ({message.fileSize ? (message.fileSize / 1024).toFixed(1) : '?'} KB)
               </a>
+              <Download className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-colors" />
             </div>
           )}
           
           {message.text && (
             <div 
-              className="break-words"
+              className="break-words leading-relaxed"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.text, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'], ALLOWED_ATTR: [] }) }}
             />
           )}
           
-          <div className={`text-[10px] mt-1 flex items-center gap-1 ${isCurrentUser ? 'text-cyber-green/60' : 'text-muted-foreground/60'}`}>
+          {/* Time & Delivery Status */}
+          <div className={`text-[10px] mt-1.5 flex items-center gap-1.5 ${isCurrentUser ? 'text-emerald-400/80 justify-end' : 'text-slate-400'}`}>
             <span>{formatTime(message.timestamp)}</span>
             {isCurrentUser && message.status && (
               <span className="flex items-center">
-                {message.status === 'delivered' && <Check className="h-3 w-3" />}
+                {message.status === 'delivered' && <Check className="h-3 w-3 text-emerald-400" />}
                 {message.status === 'seen' && <CheckCheck className="h-3 w-3 text-cyber-cyan" />}
               </span>
             )}
           </div>
           
-          {/* Encrypted indicator */}
+          {/* Encrypted Lock Dot */}
           {isCurrentUser && (
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-cyber-green rounded-full animate-pulse"></div>
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-cyber-green rounded-full shadow-[0_0_8px_rgba(0,255,101,0.8)]"></div>
           )}
         </div>
       </div>

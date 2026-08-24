@@ -4,43 +4,44 @@
 
 @layer base {
   :root {
-    /* Cybersecurity Dark Theme */
-    --background: 220 20% 8%;           /* Deep dark blue-black */
-    --foreground: 120 100% 85%;         /* Matrix green text */
+    /* Cybersecurity Obsidian Dark Theme (Stitch v2.4.0) */
+    --background: 222 47% 4%;           /* Deep obsidian #080b10 */
+    --foreground: 156 100% 88%;         /* Crisp cyber emerald #a7f3d0 */
     
-    --card: 220 20% 10%;                /* Slightly lighter dark */
-    --card-foreground: 120 100% 85%;
+    --card: 220 40% 7%;                 /* Obsidian glassmorphic surface */
+    --card-foreground: 210 40% 98%;
     
-    --popover: 220 20% 10%;
-    --popover-foreground: 120 100% 85%;
+    --popover: 220 40% 7%;
+    --popover-foreground: 210 40% 98%;
     
-    --primary: 142 76% 36%;             /* Cyber green */
-    --primary-foreground: 220 20% 8%;
+    --primary: 142 100% 50%;            /* Radiant cyber emerald #00ff65 */
+    --primary-foreground: 222 47% 4%;
     
-    --secondary: 220 20% 15%;           /* Dark secondary */
-    --secondary-foreground: 120 100% 85%;
+    --secondary: 220 30% 12%;           /* Subtle dark secondary */
+    --secondary-foreground: 210 40% 95%;
     
-    --muted: 220 20% 15%;
-    --muted-foreground: 120 50% 60%;
+    --muted: 220 25% 12%;
+    --muted-foreground: 215 20% 65%;
     
-    --accent: 177 100% 50%;             /* Cyan accent */
-    --accent-foreground: 220 20% 8%;
+    --accent: 184 100% 50%;             /* Electric cyan #00f0ff */
+    --accent-foreground: 222 47% 4%;
     
-    --destructive: 0 84% 60%;           /* Red for warnings */
+    --destructive: 347 100% 60%;        /* Cyber red #ff3366 */
     --destructive-foreground: 0 0% 98%;
     
-    --border: 120 50% 25%;              /* Green border */
-    --input: 220 20% 18%;
-    --ring: 142 76% 36%;
+    --border: 184 60% 18%;              /* Subdued cyan-tinted border */
+    --input: 222 35% 10%;
+    --ring: 184 100% 50%;
     
-    --radius: 0.25rem;
+    --radius: 0.5rem;
     
     /* Custom cyber colors */
-    --cyber-green: 142 76% 36%;
-    --cyber-cyan: 177 100% 50%;
-    --cyber-purple: 270 100% 60%;
-    --cyber-red: 0 84% 60%;
-    --terminal-green: 120 100% 85%;
+    --cyber-green: 142 100% 50%;
+    --cyber-cyan: 184 100% 50%;
+    --cyber-purple: 270 95% 65%;
+    --cyber-amber: 38 92% 50%;
+    --cyber-red: 347 100% 60%;
+    --terminal-green: 156 100% 88%;
   }
 }
 
@@ -51,12 +52,14 @@
   
   body {
     @apply bg-background text-foreground;
-    font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #080b10;
     background-image: 
-      linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 0;
+      radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
+      linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px, 32px 32px;
+    background-attachment: fixed;
   }
   
   /* Glowing text effect for headers */

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '../../types';
-import { Users, Circle, LogOut } from 'lucide-react';
+import { Users, Circle, LogOut, ShieldCheck } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface UserListProps {
@@ -13,12 +13,12 @@ interface UserListProps {
 const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onLeaveRoom }) => {
   const getUserColor = (userId: string) => {
     const colors = [
-      'bg-cyber-green',
-      'bg-cyber-cyan',
-      'bg-cyber-purple',
-      'bg-yellow-400',
-      'bg-pink-400',
-      'bg-blue-400',
+      'from-emerald-400 to-cyan-500',
+      'from-cyan-400 to-blue-500',
+      'from-purple-400 to-pink-500',
+      'from-amber-400 to-orange-500',
+      'from-pink-400 to-rose-500',
+      'from-teal-400 to-emerald-500',
     ];
     const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
@@ -32,22 +32,22 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onLeaveRoom }
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="w-64 border-l border-primary/30 bg-card/50 backdrop-blur-sm flex flex-col"
+          className="w-64 sm:w-72 border-l border-cyan-500/20 bg-[#0c121d]/95 backdrop-blur-xl flex flex-col z-20"
         >
           {/* Header */}
-          <div className="p-4 border-b border-border/50">
-            <div className="flex items-center gap-2 text-cyber-terminal font-mono">
+          <div className="p-4 border-b border-cyan-500/20 bg-[#080b10]/40">
+            <div className="flex items-center gap-2 text-white font-mono">
               <Users className="h-4 w-4 text-cyber-cyan" />
-              <span className="font-bold text-sm uppercase tracking-wider">
-                Active Users
+              <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">
+                Active Peers
               </span>
-              <span className="ml-auto text-xs text-cyber-green bg-cyber-green/10 px-2 py-0.5 rounded-full border border-cyber-green/30">
+              <span className="ml-auto text-xs text-cyber-green bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-bold">
                 {users.length}
               </span>
             </div>
           </div>
 
-          {/* User List */}
+          {/* User List Stream */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <AnimatePresence>
               {users.map((user) => (
@@ -57,26 +57,34 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onLeaveRoom }
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center gap-3 p-2.5 rounded bg-background/50 border border-border/30 hover:border-primary/50 transition-all group"
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-[#080b10]/60 border border-cyan-500/15 hover:border-cyan-500/40 hover:bg-[#080b10]/90 transition-all group"
                 >
-                  {/* Status Indicator */}
-                  <div className="relative">
-                    <div className={`w-2 h-2 rounded-full ${getUserColor(user.id)} animate-pulse`}></div>
-                    <div className={`absolute inset-0 w-2 h-2 rounded-full ${getUserColor(user.id)} animate-ping opacity-75`}></div>
+                  {/* User Avatar Circle */}
+                  <div className="relative flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${getUserColor(user.id)} p-[1px] flex items-center justify-center`}>
+                      <div className="w-full h-full rounded-[7px] bg-[#0c121d] flex items-center justify-center text-xs font-mono font-bold text-white uppercase">
+                        {user.name.slice(0, 2)}
+                      </div>
+                    </div>
+                    {/* Status Radar Pulse */}
+                    <div className="absolute -bottom-0.5 -right-0.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c121d]"></div>
+                      <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-75"></div>
+                    </div>
                   </div>
 
-                  {/* User Name */}
+                  {/* User Name & Metadata */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-mono text-sm text-cyber-terminal truncate group-hover:text-cyber-green transition-colors">
+                    <div className="font-mono text-xs sm:text-sm font-semibold text-slate-200 truncate group-hover:text-cyber-cyan transition-colors">
                       {user.name}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">
-                      ONLINE
+                    <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                      <span className="text-emerald-400 font-bold">●</span> VERIFIED PEER
                     </div>
                   </div>
 
-                  {/* Anonymous Badge */}
-                  <div className="text-[9px] text-cyber-cyan/60 font-mono uppercase">
+                  {/* Anonymous Tag */}
+                  <div className="text-[9px] text-cyber-cyan/70 font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
                     ANON
                   </div>
                 </motion.div>
@@ -84,20 +92,20 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onLeaveRoom }
             </AnimatePresence>
           </div>
 
-          {/* Footer Info */}
-          <div className="p-3 border-t border-border/50 bg-background/30 space-y-3">
-            <div className="text-[10px] font-mono text-muted-foreground space-y-1">
-              <div className="flex items-center gap-1">
-                <Circle className="h-2 w-2 text-cyber-green fill-cyber-green" />
-                <span>End-to-end encrypted</span>
+          {/* Footer Info & Disconnect Button */}
+          <div className="p-4 border-t border-cyan-500/20 bg-[#080b10]/60 space-y-3">
+            <div className="text-[10px] font-mono text-muted-foreground space-y-1.5">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <Circle className="h-1.5 w-1.5 text-cyber-green fill-cyber-green" />
+                <span>Zero Metadata Storage</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Circle className="h-2 w-2 text-cyber-cyan fill-cyber-cyan" />
-                <span>Zero data retention</span>
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <Circle className="h-1.5 w-1.5 text-cyber-cyan fill-cyber-cyan" />
+                <span>Auto-Purge on Room Expiry</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Circle className="h-2 w-2 text-cyber-purple fill-cyber-purple" />
-                <span>Complete anonymity</span>
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <ShieldCheck className="h-2.5 w-2.5 text-cyber-purple" />
+                <span>Web Crypto AES-256 E2EE</span>
               </div>
             </div>
 
@@ -106,7 +114,7 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onLeaveRoom }
                 variant="destructive"
                 size="sm"
                 onClick={onLeaveRoom}
-                className="w-full text-xs font-mono flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:border-destructive/60 py-2 transition-all"
+                className="w-full text-xs font-mono flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/15 text-destructive hover:bg-destructive/25 hover:border-destructive/60 py-2.5 rounded-xl transition-all font-bold"
                 aria-label="Leave Room"
               >
                 <LogOut className="h-3.5 w-3.5" />

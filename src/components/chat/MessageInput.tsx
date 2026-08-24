@@ -102,35 +102,35 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
   }, []);
 
   return (
-    <div className="p-4 border-t border-primary/30 bg-card/50 backdrop-blur-sm relative">
-      {/* Top glow line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyber-green/50 to-transparent"></div>
+    <div className="p-3 sm:p-4 border-t border-cyan-500/20 bg-[#0d1420]/90 backdrop-blur-xl relative z-10">
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
       
-      {/* File preview */}
+      {/* File preview chip */}
       {selectedFile && (
-        <div className="mb-3 flex items-center gap-2 p-2 bg-primary/10 border border-primary/30 rounded-md">
-          <Paperclip className="h-4 w-4 text-cyber-green" />
-          <span className="text-xs font-mono text-cyber-terminal flex-1 truncate">
+        <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-[#080b10]/90 border border-cyan-500/40 rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+          <Paperclip className="h-4 w-4 text-cyber-cyan" />
+          <span className="text-xs font-mono text-slate-200 flex-1 truncate font-semibold">
             {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
           </span>
           <button
             onClick={removeFile}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="p-1 text-slate-400 hover:text-destructive transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-3">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 sm:gap-3">
         <div className="flex-1 relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyber-green/50" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-400/70 pointer-events-none" />
           <input
             type="text"
             value={text}
             onChange={handleChange}
             placeholder="[ENCRYPTED MESSAGE]"
-            className="w-full h-11 pl-10 pr-4 rounded-md bg-input/50 border border-primary/30 text-cyber-terminal placeholder:text-muted-foreground/50 font-mono text-sm focus:outline-none focus:border-primary focus:shadow-[0_0_15px_rgba(0,255,65,0.2)] transition-all"
+            className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#080b10]/80 border border-cyan-500/30 text-slate-100 placeholder:text-muted-foreground/40 font-mono text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all"
           />
         </div>
 
@@ -140,13 +140,14 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
             type="button"
             size="icon"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="h-11 w-11 border border-primary/50 hover:border-primary hover:shadow-[0_0_15px_rgba(0,255,65,0.3)] bg-transparent"
+            className="h-11 w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#080b10]/60 transition-all"
+            title="Emoji Picker"
           >
             <Smile className="h-5 w-5" />
           </Button>
           
           {showEmojiPicker && (
-            <div className="absolute bottom-14 right-0 z-50">
+            <div className="absolute bottom-14 right-0 z-50 shadow-2xl rounded-2xl overflow-hidden border border-cyan-500/40">
               <EmojiPicker
                 onEmojiClick={handleEmojiClick}
                 theme={Theme.DARK}
@@ -163,7 +164,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           type="button"
           size="icon"
           onClick={() => fileInputRef.current?.click()}
-          className="h-11 w-11 border border-primary/50 hover:border-primary hover:shadow-[0_0_15px_rgba(0,255,65,0.3)] bg-transparent"
+          className="h-11 w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#080b10]/60 transition-all"
+          title="Attach Encrypted File"
         >
           <Paperclip className="h-5 w-5" />
         </Button>
@@ -175,19 +177,25 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           accept="image/*,.pdf,.doc,.docx,.txt"
         />
 
+        {/* Send Button */}
         <Button 
           type="submit" 
           size="icon" 
           disabled={!text.trim() && !selectedFile}
-          className="h-11 w-11 border border-primary/50 hover:border-primary hover:shadow-[0_0_15px_rgba(0,255,65,0.3)] disabled:opacity-30 disabled:cursor-not-allowed"
+          className="h-11 w-11 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/50 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(0,255,101,0.35)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          title="Send Encrypted Message"
         >
           <Send className="h-5 w-5" />
         </Button>
       </form>
       
-      {/* Character count */}
-      <div className="mt-2 text-[10px] font-mono text-muted-foreground/50 text-right">
-        {text.length}/1000 chars • E2E encrypted
+      {/* Telemetry info */}
+      <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono text-muted-foreground/60 px-1">
+        <span className="text-emerald-400/70 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          AES-256-GCM Secure Pipeline
+        </span>
+        <span>{text.length}/1000 chars</span>
       </div>
     </div>
   );
