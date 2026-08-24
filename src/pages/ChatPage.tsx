@@ -25,7 +25,7 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { state, dispatch, setupEncryption, encryptionKey, clearEncryption } = useChat();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
   
   // Direct join states
   const [needsDisplayName, setNeedsDisplayName] = useState(!location.state?.displayName);
@@ -312,15 +312,8 @@ const ChatPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Collapsible Active Peers Sidebar */}
-      <UserList 
-        isSidebarOpen={isSidebarOpen} 
-        users={state.users} 
-        onLeaveRoom={() => setShowLeaveModal(true)}
-      />
-
       {/* Main Chat Stream Container */}
-      <main className="flex-1 flex flex-col transition-all duration-300 bg-[#080b10] min-w-0">
+      <main className="flex-1 flex flex-col transition-all duration-300 bg-[#080b10] min-w-0 h-full">
         <Header 
           roomName={roomName || 'default-room'} 
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -330,6 +323,14 @@ const ChatPage: React.FC = () => {
         <MessageList messages={state.messages} currentUser={currentUser} typingUsers={state.typingUsers} />
         <MessageInput onSendMessage={sendMessage} onTyping={sendTypingIndicator} />
       </main>
+
+      {/* Active Peers Sidebar (Right Side) */}
+      <UserList 
+        isSidebarOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        users={state.users} 
+        onLeaveRoom={() => setShowLeaveModal(true)}
+      />
 
       {/* Leave Room Modal */}
       <LeaveRoomModal
