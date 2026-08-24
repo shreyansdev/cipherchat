@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Cybersecurity Dark Theme */
+    --background: 220 20% 8%;           /* Deep dark blue-black */
+    --foreground: 120 100% 85%;         /* Matrix green text */
+    
+    --card: 220 20% 10%;                /* Slightly lighter dark */
+    --card-foreground: 120 100% 85%;
+    
+    --popover: 220 20% 10%;
+    --popover-foreground: 120 100% 85%;
+    
+    --primary: 142 76% 36%;             /* Cyber green */
+    --primary-foreground: 220 20% 8%;
+    
+    --secondary: 220 20% 15%;           /* Dark secondary */
+    --secondary-foreground: 120 100% 85%;
+    
+    --muted: 220 20% 15%;
+    --muted-foreground: 120 50% 60%;
+    
+    --accent: 177 100% 50%;             /* Cyan accent */
+    --accent-foreground: 220 20% 8%;
+    
+    --destructive: 0 84% 60%;           /* Red for warnings */
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 120 50% 25%;              /* Green border */
+    --input: 220 20% 18%;
+    --ring: 142 76% 36%;
+    
+    --radius: 0.25rem;
+    
+    /* Custom cyber colors */
+    --cyber-green: 142 76% 36%;
+    --cyber-cyan: 177 100% 50%;
+    --cyber-purple: 270 100% 60%;
+    --cyber-red: 0 84% 60%;
+    --terminal-green: 120 100% 85%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
+    background-image: 
+      linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 0;
+  }
+  
+  /* Glowing text effect for headers */
+  h1, h2, h3 {
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+    border-left: 1px solid hsl(var(--border));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent));
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+  }
+  
+  /* Cyber button effects */
+  button {
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  button:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+  }
+  
+  /* Input glow effect */
+  input:focus, textarea:focus {
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+  }
+  
+  /* Cyber border animation */
+  @keyframes borderPulse {
+    0%, 100% {
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+    }
+    50% {
+      border-color: hsl(var(--accent));
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+  }
+  
+  .cyber-border {
+    animation: borderPulse 3s ease-in-out infinite;
+  }
+  
+  /* Matrix rain effect background */
+  @keyframes matrix-fall {
+    0% {
+      transform: translateY(-100%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+  }
+  
+  /* Glitch effect */
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+}

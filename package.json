@@ -1,0 +1,61 @@
+{
+  "name": "cipherchat",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest run tests/unit --coverage",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "preview": "vite preview",
+    "audit:ci": "npm audit --audit-level=moderate"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "dompurify": "^3.4.11",
+    "emoji-picker-react": "^4.16.1",
+    "framer-motion": "^11.2.10",
+    "lucide-react": "^0.395.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.23.1",
+    "socket.io-client": "^4.8.3",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@testing-library/jest-dom": "^6.4.5",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/dompurify": "^3.0.5",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/ui": "^4.1.8",
+    "autoprefixer": "^10.4.19",
+    "bcrypt": "^5.1.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "express": "^4.22.2",
+    "jsdom": "^29.1.1",
+    "pino": "^10.3.1",
+    "postcss": "^8.4.38",
+    "redis": "^4.6.12",
+    "supertest": "^7.0.0",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.2.2",
+    "vite": "^6.4.3",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0",
+    "tar": "^7.5.16"
+  }
+}
