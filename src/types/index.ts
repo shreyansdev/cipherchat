@@ -67,6 +67,7 @@ export interface JoinRoomPayload {
   roomName: string;
   userName: string;
   userId: string;
+  password?: string;
 }
 
 export interface TypingPayload {
