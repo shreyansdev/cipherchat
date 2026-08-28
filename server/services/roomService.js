@@ -3,6 +3,7 @@ import redisClient from '../config/redis.js';
 import logger from '../lib/logger.js';
 import crypto from 'crypto';
 import { adjectives, nouns } from '../lib/wordlist.js';
+import { addUser, removeUser, getRoomUsersList } from './presenceService.js';
 
 const BCRYPT_COST = parseInt(process.env.BCRYPT_COST) || 12;
 
@@ -54,7 +55,7 @@ export const createRoom = async (roomName, password = null, ttlSeconds = 3600) =
       createdAt: new Date().toISOString(),
       passwordHash: '',
       ttlSeconds: ttlSeconds.toString(),
-      maxUsers: process.env.TEST_MAX_USERS || '50', // Default as per spec
+      maxUsers: process.env.TEST_MAX_USERS || process.env.MAX_USERS_PER_ROOM || '50', // Default as per spec
     };
 
     // Hash password if provided
@@ -169,17 +170,14 @@ export const deleteRoom = async (roomName) => {
 
 // Aliases for compatibility with socket.js
 export const addUserToRoom = async (roomName, userId, userName, maxUsers) => {
-  const { addUser } = await import('./presenceService.js');
   return addUser(roomName, userId, userName, maxUsers);
 };
 
 export const removeUserFromRoom = async (roomName, userId) => {
-  const { removeUser } = await import('./presenceService.js');
   return removeUser(roomName, userId);
 };
 
 export const getRoomUsers = async (roomName) => {
-  const { getRoomUsersList } = await import('./presenceService.js');
   return await getRoomUsersList(roomName);
 };
 
