@@ -8,12 +8,14 @@ const ALGORITHM = 'AES-GCM';
 const KEY_LENGTH = 256;
 
 /**
- * Converts Uint8Array to Base64 string safely (avoids stack overflow on large payloads)
+ * Converts Uint8Array to Base64 string safely and efficiently
  */
 function toBase64(u8: Uint8Array): string {
+  const CHUNK_SIZE = 8192;
   let binary = '';
-  for (let i = 0; i < u8.length; i++) {
-    binary += String.fromCharCode(u8[i]!);
+  for (let i = 0; i < u8.length; i += CHUNK_SIZE) {
+    const chunk = u8.subarray(i, i + CHUNK_SIZE);
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return btoa(binary);
 }
@@ -34,6 +36,7 @@ function fromBase64(base64: string): Uint8Array {
  * Derives an encryption key from a password and room slug
  */
 export async function deriveKey(password: string, roomSlug: string): Promise<CryptoKey> {
+  const cryptoObj = globalThis.crypto;
   const actualPassword = password || roomSlug;
   if (!actualPassword || !roomSlug) {
     throw new Error('Password and room slug are required for key derivation');
@@ -43,7 +46,7 @@ export async function deriveKey(password: string, roomSlug: string): Promise<Cry
   const passwordData = encoder.encode(actualPassword);
   const salt = encoder.encode(roomSlug);
 
-  const baseKey = await window.crypto.subtle.importKey(
+  const baseKey = await cryptoObj.subtle.importKey(
     'raw',
     passwordData,
     'PBKDF2',
@@ -51,7 +54,7 @@ export async function deriveKey(password: string, roomSlug: string): Promise<Cry
     ['deriveKey']
   );
 
-  return window.crypto.subtle.deriveKey(
+  return cryptoObj.subtle.deriveKey(
     {
       name: 'PBKDF2',
       salt,
@@ -72,11 +75,12 @@ export async function encryptMessage(
   plaintext: string,
   key: CryptoKey
 ): Promise<{ ciphertext: string; iv: string }> {
+  const cryptoObj = globalThis.crypto;
   const encoder = new TextEncoder();
   const data = encoder.encode(plaintext);
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const iv = cryptoObj.getRandomValues(new Uint8Array(12));
 
-  const encryptedBuffer = await window.crypto.subtle.encrypt(
+  const encryptedBuffer = await cryptoObj.subtle.encrypt(
     {
       name: ALGORITHM,
       iv,
@@ -104,7 +108,7 @@ export async function decryptMessage(
     const encryptedData = fromBase64(ciphertext);
     const ivData = fromBase64(iv);
 
-    const decryptedBuffer = await window.crypto.subtle.decrypt(
+    const decryptedBuffer = await globalThis.crypto.subtle.decrypt(
       {
         name: ALGORITHM,
         iv: ivData,
