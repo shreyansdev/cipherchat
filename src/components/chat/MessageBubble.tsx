@@ -84,7 +84,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
                 alt={message.fileName || 'Shared image'}
                 className="max-w-full rounded-xl cursor-pointer hover:scale-105 transition-transform duration-300"
                 style={{ maxHeight: '280px' }}
-                onClick={() => window.open(message.mediaUrl, '_blank')}
+                onClick={() => window.open(message.mediaUrl, '_blank', 'noopener,noreferrer')}
               />
             </div>
           )}
@@ -94,6 +94,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
               <a
                 href={message.mediaUrl}
                 download={message.fileName}
+                rel="noopener noreferrer"
                 className="text-xs text-cyber-cyan hover:underline flex-1 truncate font-semibold"
               >
                 {message.fileName} ({message.fileSize ? (message.fileSize / 1024).toFixed(1) : '?'} KB)
