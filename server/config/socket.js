@@ -1,5 +1,5 @@
 import { storeMessage, getRoomMessages } from '../services/messageService.js';
-import { addUserToRoom, removeUserFromRoom, getRoomUsers, deleteRoom } from '../services/roomService.js';
+import { addUserToRoom, removeUserFromRoom, getRoomUsers, deleteRoom, getRoomData, verifyRoomPassword } from '../services/roomService.js';
 import { registerSession, removeSession, getUserCount } from '../services/presenceService.js';
 import DOMPurify from 'isomorphic-dompurify';
 import logger from '../lib/logger.js';
@@ -133,7 +133,6 @@ export const setupSocketHandlers = async (io) => {
         }, 'User joining room');
         
         // Get room data (including remaining TTL)
-        const { getRoomData, verifyRoomPassword } = await import('../services/roomService.js');
         const roomData = await getRoomData(sanitizedRoomName);
         
         if (!socket.connected) {
