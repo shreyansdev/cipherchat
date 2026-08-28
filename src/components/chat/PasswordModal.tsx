@@ -9,12 +9,12 @@ interface PasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (password: string) => void;
-  isLoading: boolean;
+  isLoading?: boolean;
   error?: string | null;
   rateLimitSeconds?: number;
 }
 
-const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onSubmit, isLoading, error, rateLimitSeconds = 0 }) => {
+const PasswordModal: React.FC<PasswordModalProps> = ({ isOpen, onClose, onSubmit, isLoading = false, error, rateLimitSeconds = 0 }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
