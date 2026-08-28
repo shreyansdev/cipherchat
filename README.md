@@ -13,8 +13,21 @@
 
 ---
 
+## Application Preview
+
+| Homepage & Security Telemetry | Encrypted Chat Interface (Dual Peer) |
+|:---:|:---:|
+| ![Homepage](docs/screenshots/01-homepage.png) | ![Chat Interface](docs/screenshots/04-chat-interface.png) |
+
+| Create Secure Room (Auto-Slug & Password) | Join Existing Room |
+|:---:|:---:|
+| ![Create Room](docs/screenshots/02-create-room.png) | ![Join Room](docs/screenshots/03-join-room.png) |
+
+---
+
 ## Table of Contents
 
+- [Application Preview](#application-preview)
 - [1. Core Principles & Privacy Guarantees](#1-core-principles--privacy-guarantees)
 - [2. Cryptographic Architecture](#2-cryptographic-architecture)
 - [3. System Architecture](#3-system-architecture)
