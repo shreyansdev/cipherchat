@@ -44,7 +44,7 @@ describe('Socket Empty Room Grace Period Auto-Deletion Unit Tests', () => {
   let mockIo: any;
   let connectionHandler: any;
   let mockSocket: any;
-  let socketEventHandlers: Record<string, Function> = {};
+  let socketEventHandlers: Record<string, (...args: any[]) => any> = {};
 
   beforeEach(async () => {
     vi.useFakeTimers();
@@ -60,14 +60,14 @@ describe('Socket Empty Room Grace Period Auto-Deletion Unit Tests', () => {
       to: vi.fn().mockReturnValue({ emit: vi.fn() }),
       rooms: new Set(['alpha-beta-1234']),
       userData: null,
-      on: vi.fn((event: string, handler: Function) => {
+      on: vi.fn((event: string, handler: (...args: any[]) => any) => {
         socketEventHandlers[event] = handler;
       }),
     };
 
     mockIo = {
       adapter: vi.fn(),
-      on: vi.fn((event: string, handler: Function) => {
+      on: vi.fn((event: string, handler: (...args: any[]) => any) => {
         if (event === 'connection') {
           connectionHandler = handler;
         }
