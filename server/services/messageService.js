@@ -1,7 +1,7 @@
 import redisClient from '../config/redis.js';
 import logger from '../lib/logger.js';
 
-const MESSAGE_TTL = parseInt(process.env.MESSAGE_TTL) || 3600; // 1 hour
+const MAX_MESSAGES_LIMIT = process.env.MAX_MESSAGES_PER_ROOM || '500';
 
 /**
  * Store a message in Redis
@@ -14,7 +14,7 @@ export const storeMessage = async (roomName, message) => {
     
     const result = await redisClient.storeMessage(
       [messagesKey, metaKey],
-      [messageData, '500']
+      [messageData, MAX_MESSAGES_LIMIT]
     );
     
     return result === 1;
@@ -32,7 +32,14 @@ export const getRoomMessages = async (roomName) => {
     const messagesKey = `room:${roomName}:messages`;
     const messagesData = await redisClient.lRange(messagesKey, 0, -1);
     
-    const messages = messagesData.map(msgData => JSON.parse(msgData));
+    const messages = [];
+    for (const msgData of messagesData) {
+      try {
+        messages.push(JSON.parse(msgData));
+      } catch (parseErr) {
+        logger.warn({ parseErr, roomName }, 'Skipping corrupted message in history');
+      }
+    }
     return messages;
   } catch (error) {
     logger.error({ error, roomName }, 'Error getting room messages');
