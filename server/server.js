@@ -107,8 +107,11 @@ app.use(cors({
 app.use(express.json());
 
 // API Routes with rate limiting
+app.use('/api/rooms/create', roomCreationLimiter);
 app.use('/api/rooms', apiLimiter, roomRoutes);
 app.use('/api/files', apiLimiter, fileRoutes);
+
+export { app, httpServer, io };
 
 // Start server
 const PORT = process.env.PORT || 3001;
