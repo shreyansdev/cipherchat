@@ -6,7 +6,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["dist", "node_modules", "tailwind.config.js", "postcss.config.js"],
+    ignores: ["dist", "node_modules", "coverage", "playwright-report", "test-results", "tailwind.config.js", "postcss.config.js"],
   },
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
