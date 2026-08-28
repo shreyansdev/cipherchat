@@ -23,51 +23,7 @@ const clientOptions = {
         return [...keys, ...args];
       }
     }),
-    addUser: defineScript({
-      NUMBER_OF_KEYS: 3,
-      SCRIPT: `
-        local metaKey = KEYS[1]
-        local usersKey = KEYS[2]
-        local usersMapKey = KEYS[3]
-        local userId = ARGV[1]
-        local userName = ARGV[2]
-        local maxUsers = tonumber(ARGV[3])
 
-        -- Check if room exists
-        local roomExists = redis.call('EXISTS', metaKey)
-        if roomExists == 0 then
-            return -1
-        end
-
-        -- Get room TTL
-        local ttl = redis.call('TTL', metaKey)
-        if ttl <= 0 then
-            return -1
-        end
-
-        -- Check if user is already in room
-        local isMember = redis.call('SISMEMBER', usersKey, userId)
-        if isMember == 0 then
-            local currentCount = redis.call('SCARD', usersKey)
-            if currentCount >= maxUsers then
-                return -2
-            end
-        end
-
-        -- Add user and set name
-        redis.call('SADD', usersKey, userId)
-        redis.call('HSET', usersMapKey, userId, userName)
-
-        -- Apply TTL to match room meta
-        redis.call('EXPIRE', usersKey, ttl)
-        redis.call('EXPIRE', usersMapKey, ttl)
-
-        return 1
-      `,
-      transformArguments(keys, args) {
-        return [...keys, ...args];
-      }
-    }),
     removeUser: defineScript({
       NUMBER_OF_KEYS: 2,
       SCRIPT: `
