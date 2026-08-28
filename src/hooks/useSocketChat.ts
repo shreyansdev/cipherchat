@@ -20,6 +20,12 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
   const manualReconnectAttempts = useRef(0);
   const isReconnectingManually = useRef(false);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const expiryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const encryptionKeyRef = useRef<CryptoKey | null>(encryptionKey);
+
+  useEffect(() => {
+    encryptionKeyRef.current = encryptionKey;
+  }, [encryptionKey]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -71,13 +77,10 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      // Access password from window.history.state or via location state since location state is accessible in ChatPage.
-      // We can pass the password to useSocketChat or read it from window.history.state directly.
-      // Let's pass it down or read from history state if it exists.
       const historyState = window.history.state?.usr;
       const roomPassword = historyState?.password || '';
 
-      const payload: JoinRoomPayload & { password?: string } = {
+      const payload: JoinRoomPayload = {
         roomName,
         userName: currentUser.name,
         userId: currentUser.id,
@@ -127,9 +130,10 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
 
     const onNewMessage = async (message: Message) => {
       let decryptedMessage = message;
-      if (message.type === 'user' && message.ciphertext && message.iv && encryptionKey) {
+      const currentKey = encryptionKeyRef.current;
+      if (message.type === 'user' && message.ciphertext && message.iv && currentKey) {
         try {
-          const text = await decryptMessage(message.ciphertext, message.iv, encryptionKey);
+          const text = await decryptMessage(message.ciphertext, message.iv, currentKey);
           decryptedMessage = { ...message, text };
         } catch (error) {
           console.error('Decryption failed for new message:', error);
@@ -149,6 +153,8 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
         dispatch({ type: 'SET_ERROR', payload: 'ROOM_NOT_FOUND' });
       } else if (error.code === 'RATE_LIMITED') {
         dispatch({ type: 'SET_ERROR', payload: 'RATE_LIMITED' });
+      } else if (error.code === 'INVALID_PASSWORD' || error.code === 'PASSWORD_REQUIRED') {
+        dispatch({ type: 'SET_ERROR', payload: 'WRONG_PASSWORD' });
       }
     };
 
@@ -174,11 +180,12 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
     };
 
     const onMessageHistory = async (messages: Message[]) => {
+      const currentKey = encryptionKeyRef.current;
       for (const message of messages) {
         let decryptedMessage = message;
-        if (message.type === 'user' && message.ciphertext && message.iv && encryptionKey) {
+        if (message.type === 'user' && message.ciphertext && message.iv && currentKey) {
           try {
-            const text = await decryptMessage(message.ciphertext, message.iv, encryptionKey);
+            const text = await decryptMessage(message.ciphertext, message.iv, currentKey);
             decryptedMessage = { ...message, text };
           } catch (error) {
             console.error('Decryption failed for history message:', error);
@@ -193,9 +200,10 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
 
     const onRoomJoined = ({ remainingTtl }: { remainingTtl: number }) => {
       if (remainingTtl > 0) {
-        // Set a timer to trigger ROOM_EXPIRED slightly before or at absolute expiry
-        // Use remainingTtl * 1000 to convert to ms
-        setTimeout(() => {
+        if (expiryTimeoutRef.current) {
+          clearTimeout(expiryTimeoutRef.current);
+        }
+        expiryTimeoutRef.current = setTimeout(() => {
           if (isMounted.current) {
             dispatch({ type: 'SET_ERROR', payload: 'ROOM_EXPIRED' });
           }
@@ -220,6 +228,11 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
       isMounted.current = false;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      if (expiryTimeoutRef.current) {
+        clearTimeout(expiryTimeoutRef.current);
+        expiryTimeoutRef.current = null;
       }
       console.log('🔌 Disconnecting socket and cleaning up listeners');
       socket.off('connect', onConnect);
@@ -235,7 +248,7 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
       socket.off('room-joined', onRoomJoined);
       socket.disconnect();
     };
-  }, [currentUser, roomName, dispatch, encryptionKey]);
+  }, [currentUser, roomName, dispatch]);
 
   // Sync typing users with context
   useEffect(() => {
