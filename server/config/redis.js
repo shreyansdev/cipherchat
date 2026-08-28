@@ -1,13 +1,6 @@
 import { createClient, defineScript } from 'redis';
 import logger from '../lib/logger.js';
 
-// Load dotenv only if available
-try {
-  const dotenv = await import('dotenv');
-  dotenv.config();
-} catch (e) {
-  // Ignore if dotenv is not available; assume env vars are set externally
-}
 
 const clientOptions = {
   socket: {
