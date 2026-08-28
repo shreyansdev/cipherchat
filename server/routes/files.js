@@ -44,16 +44,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const roomName = req.headers['x-room-name'];
-    if (!roomName) {
-      logger.warn('File upload attempt with no room name');
-      return res.status(400).json({ error: 'Room name is required' });
+    if (!roomName || typeof roomName !== 'string' || !/^[a-z0-9_-]+$/i.test(roomName.trim())) {
+      logger.warn({ roomName }, 'File upload attempt with invalid room name');
+      return res.status(400).json({ error: 'Valid room name is required' });
     }
+    const sanitizedRoomName = roomName.trim().toLowerCase();
 
     const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const { filename, filepath } = await saveFile(req.file, fileId);
+    const { filename } = await saveFile(req.file, fileId);
 
     if (!filename) {
-      logger.error({ fileId, roomName }, 'Failed to save file to disk');
+      logger.error({ fileId, roomName: sanitizedRoomName }, 'Failed to save file to disk');
       return res.status(500).json({ error: 'Failed to save file' });
     }
 
@@ -71,14 +72,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       uploadedAt: Date.now().toString(),
     };
 
-    const metadataStored = await storeFileMetadata(fileId, metadata, roomName);
+    const metadataStored = await storeFileMetadata(fileId, metadata, sanitizedRoomName);
     if (!metadataStored) {
-      logger.error({ fileId, roomName }, 'Failed to store file metadata in Redis');
+      logger.error({ fileId, roomName: sanitizedRoomName }, 'Failed to store file metadata in Redis');
       await deleteFile(filename);
       return res.status(500).json({ error: 'Failed to save file metadata' });
     }
 
-    logger.info({ fileId, roomName, mediaType, size: req.file.size }, 'File uploaded successfully');
+    logger.info({ fileId, roomName: sanitizedRoomName, mediaType, size: req.file.size }, 'File uploaded successfully');
 
     res.json({
       success: true,
@@ -108,9 +109,10 @@ router.get('/:fileId', async (req, res) => {
 
     const filepath = getFilePath(metadata.filename);
     const mimetype = metadata.mimetype || mime.lookup(metadata.filename) || 'application/octet-stream';
+    const safeOriginalName = (metadata.originalName || 'file').replace(/["\r\n\\]/g, '');
 
     res.setHeader('Content-Type', mimetype);
-    res.setHeader('Content-Disposition', `inline; filename="${metadata.originalName}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
     res.sendFile(filepath);
   } catch (error) {
     logger.error({ error, fileId: req.params.fileId }, 'File serve error');
