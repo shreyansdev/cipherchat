@@ -1,5 +1,5 @@
 import express from 'express';
-import { createRoom, isRoomProtected, verifyRoomPassword } from '../services/roomService.js';
+import { createRoom, isRoomProtected, verifyRoomPassword, getRoomData } from '../services/roomService.js';
 import logger from '../lib/logger.js';
 
 const router = express.Router();
@@ -74,7 +74,6 @@ router.get('/:name/protected', async (req, res) => {
     }
     
     // Check if room exists
-    const { getRoomData } = await import('../services/roomService.js');
     const roomData = await getRoomData(name);
     
     if (!roomData) {
