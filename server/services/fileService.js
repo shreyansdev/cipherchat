@@ -7,7 +7,6 @@ import logger from '../lib/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MESSAGE_TTL = parseInt(process.env.MESSAGE_TTL) || 3600; // 1 hour
 const UPLOADS_DIR = path.join(__dirname, '../uploads');
 
 // Ensure uploads directory exists
@@ -87,8 +86,9 @@ export const deleteFile = async (filename) => {
 };
 
 /**
- * Get file path
+ * Get file path safely within uploads directory
  */
 export const getFilePath = (filename) => {
-  return path.join(UPLOADS_DIR, filename);
+  const safeFilename = path.basename(filename);
+  return path.join(UPLOADS_DIR, safeFilename);
 };
