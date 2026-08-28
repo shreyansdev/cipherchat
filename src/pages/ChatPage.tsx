@@ -191,7 +191,7 @@ const ChatPage: React.FC = () => {
     );
   }
 
-  if (!encryptionKey && location.state?.password) {
+  if (!encryptionKey && !needsDisplayName) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#080b10] text-cyber-cyan font-mono">
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#0d1420]/80 border border-cyan-500/30 shadow-[0_0_30px_rgba(0,240,255,0.15)] animate-pulse">
