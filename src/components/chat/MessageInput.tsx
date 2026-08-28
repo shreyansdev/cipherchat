@@ -129,6 +129,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
             type="text"
             value={text}
             onChange={handleChange}
+            maxLength={1000}
             placeholder="[ENCRYPTED MESSAGE]"
             className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#080b10]/80 border border-cyan-500/30 text-slate-100 placeholder:text-muted-foreground/40 font-mono text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all"
           />
