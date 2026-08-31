@@ -143,8 +143,11 @@ describe('roomService', () => {
       expect(result).toBe(true);
     });
 
-    it('throws error if room is not found (hash is undefined)', async () => {
+    it('throws error if room is not found (hash is undefined or null)', async () => {
       vi.mocked(redisClient.hGet).mockResolvedValue(undefined as any);
+      await expect(roomService.verifyRoomPassword('room1', 'pass')).rejects.toThrow('Room not found');
+
+      vi.mocked(redisClient.hGet).mockResolvedValue(null as any);
       await expect(roomService.verifyRoomPassword('room1', 'pass')).rejects.toThrow('Room not found');
     });
 

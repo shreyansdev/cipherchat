@@ -82,7 +82,8 @@ export const createRoom = async (roomName, password = null, ttlSeconds = 3600) =
  */
 export const isRoomProtected = async (roomName) => {
   try {
-    const metaKey = `room:${roomName}:meta`;
+    const slug = (roomName || '').trim().toLowerCase();
+    const metaKey = `room:${slug}:meta`;
     const passwordHash = await redisClient.hGet(metaKey, 'passwordHash');
     
     return !!(passwordHash && passwordHash !== '');
@@ -97,11 +98,12 @@ export const isRoomProtected = async (roomName) => {
  */
 export const verifyRoomPassword = async (roomName, password) => {
   try {
-    const metaKey = `room:${roomName}:meta`;
+    const slug = (roomName || '').trim().toLowerCase();
+    const metaKey = `room:${slug}:meta`;
     const passwordHash = await redisClient.hGet(metaKey, 'passwordHash');
     
-    if (passwordHash === undefined) {
-      logger.warn({ roomName }, 'Verify password failed: Room not found');
+    if (passwordHash === undefined || passwordHash === null) {
+      logger.warn({ roomName: slug }, 'Verify password failed: Room not found');
       throw new Error('Room not found');
     }
 
@@ -114,7 +116,7 @@ export const verifyRoomPassword = async (roomName, password) => {
     const isValid = await bcrypt.compare(password, passwordHash);
     
     if (!isValid) {
-      logger.warn({ roomName }, 'Verify password failed: Invalid password');
+      logger.warn({ roomName: slug }, 'Verify password failed: Invalid password');
     }
 
     return isValid;
@@ -129,7 +131,8 @@ export const verifyRoomPassword = async (roomName, password) => {
  */
 export const getRoomData = async (roomName) => {
   try {
-    const metaKey = `room:${roomName}:meta`;
+    const slug = (roomName || '').trim().toLowerCase();
+    const metaKey = `room:${slug}:meta`;
     const roomMeta = await redisClient.hGetAll(metaKey);
     
     if (Object.keys(roomMeta).length === 0) {
@@ -150,17 +153,18 @@ export const getRoomData = async (roomName) => {
  */
 export const deleteRoom = async (roomName) => {
   try {
-    const metaKey = `room:${roomName}:meta`;
-    const usersKey = `room:${roomName}:users`;
-    const usersMapKey = `room:${roomName}:users_map`;
-    const messagesKey = `room:${roomName}:messages`;
+    const slug = (roomName || '').trim().toLowerCase();
+    const metaKey = `room:${slug}:meta`;
+    const usersKey = `room:${slug}:users`;
+    const usersMapKey = `room:${slug}:users_map`;
+    const messagesKey = `room:${slug}:messages`;
     
     await redisClient.del(metaKey);
     await redisClient.del(usersKey);
     await redisClient.del(usersMapKey);
     await redisClient.del(messagesKey);
     
-    logger.info({ roomName }, 'Room deleted successfully');
+    logger.info({ roomName: slug }, 'Room deleted successfully');
     return true;
   } catch (error) {
     logger.error({ error, roomName }, 'Error deleting room');
