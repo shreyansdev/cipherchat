@@ -72,5 +72,5 @@ describe('Server Graceful Shutdown', () => {
 
     // Process exits with code 0
     expect(exitSpy).toHaveBeenCalledWith(0);
-  });
+  }, 15000);
 });

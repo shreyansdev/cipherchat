@@ -11,6 +11,11 @@ const messageRateLimits = new Map();
 const MESSAGE_RATE_LIMIT = parseInt(process.env.SOCKET_MSG_RATE_PER_SECOND) || 5; 
 const MESSAGE_RATE_WINDOW = 1000; // 1 second
 
+// Rate limiting for join-room / password verification attempts (Anti-Brute Force / DoS protection)
+const joinRateLimits = new Map();
+const JOIN_RATE_LIMIT = parseInt(process.env.SOCKET_JOIN_RATE_LIMIT) || 10;
+const JOIN_RATE_WINDOW = 10000; // 10 seconds
+
 // Empty room grace period deletion management
 export const emptyRoomTimers = new Map();
 const DEFAULT_EMPTY_ROOM_GRACE_PERIOD_MS = parseInt(process.env.EMPTY_ROOM_GRACE_PERIOD_SECONDS || '120', 10) * 1000;
@@ -42,13 +47,57 @@ const checkMessageRateLimit = (userId) => {
   return true;
 };
 
+const checkJoinRateLimit = (socketId) => {
+  const now = Date.now();
+  const timestamps = joinRateLimits.get(socketId) || [];
+  const windowStart = now - JOIN_RATE_WINDOW;
+  const recentTimestamps = timestamps.filter(ts => ts > windowStart);
+
+  if (recentTimestamps.length >= JOIN_RATE_LIMIT) {
+    return false; // Rate limit exceeded
+  }
+
+  recentTimestamps.push(now);
+  joinRateLimits.set(socketId, recentTimestamps);
+  return true;
+};
+
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
 const ROOM_NAME_REGEX = /^[a-z0-9_-]+$/;
 
 let pubClient;
 let subClient;
 
+// Periodic cleaner to prevent memory leak from stale rate-limit entries
+const rateLimitCleanerInterval = setInterval(() => {
+  const now = Date.now();
+  const msgWindowStart = now - MESSAGE_RATE_WINDOW;
+  for (const [userId, timestamps] of messageRateLimits.entries()) {
+    const active = timestamps.filter(ts => ts > msgWindowStart);
+    if (active.length === 0) {
+      messageRateLimits.delete(userId);
+    } else {
+      messageRateLimits.set(userId, active);
+    }
+  }
+
+  const joinWindowStart = now - JOIN_RATE_WINDOW;
+  for (const [socketId, timestamps] of joinRateLimits.entries()) {
+    const active = timestamps.filter(ts => ts > joinWindowStart);
+    if (active.length === 0) {
+      joinRateLimits.delete(socketId);
+    } else {
+      joinRateLimits.set(socketId, active);
+    }
+  }
+}, 60000);
+rateLimitCleanerInterval.unref();
+
 export const closeSocketServices = async () => {
+  clearInterval(rateLimitCleanerInterval);
+  messageRateLimits.clear();
+  joinRateLimits.clear();
+
   for (const timer of emptyRoomTimers.values()) {
     clearTimeout(timer);
   }
@@ -95,9 +144,18 @@ export const setupSocketHandlers = async (io) => {
         if (!data || typeof data !== 'object') return;
         const { roomName, userName, userId, password } = data;
 
-        if (!roomName || !userName || !userId) {
+        if (!roomName || !userName || !userId ||
+            typeof roomName !== 'string' || typeof userName !== 'string' || typeof userId !== 'string' ||
+            (password !== undefined && typeof password !== 'string')) {
           logger.warn({ data }, 'Join-room failed: Invalid room or user data');
           socket.emit('error', { message: 'Invalid room or user data' });
+          return;
+        }
+
+        // Enforce rate limiting on join attempts (Anti-Brute Force / DoS defense)
+        if (!checkJoinRateLimit(socket.id)) {
+          logger.warn({ socketId: socket.id }, 'Join-room failed: Join rate limit exceeded');
+          socket.emit('error', { message: 'Too many join attempts. Please wait.', code: 'RATE_LIMITED' });
           return;
         }
 
@@ -283,6 +341,7 @@ export const setupSocketHandlers = async (io) => {
 
     // Send message event
     socket.on('send-message', async (data, callback) => {
+      const safeCallback = typeof callback === 'function' ? callback : null;
       try {
         if (!data || typeof data !== 'object') return;
         const { message } = data;
@@ -290,7 +349,7 @@ export const setupSocketHandlers = async (io) => {
         if (!socket.userData || !socket.userData.roomName) {
           logger.warn({ socketId: socket.id }, 'Send-message failed: User not authenticated');
           socket.emit('error', { message: 'User not authenticated' });
-          if (callback) callback({ success: false, error: 'Not authenticated' });
+          if (safeCallback) safeCallback({ success: false, error: 'Not authenticated' });
           return;
         }
 
@@ -300,23 +359,23 @@ export const setupSocketHandlers = async (io) => {
         if (!socket.rooms.has(authenticatedRoom)) {
           logger.warn({ socketId: socket.id, authenticatedRoom }, 'Send-message failed: Socket not in Socket.IO room');
           socket.emit('error', { message: 'Not authorized for this room' });
-          if (callback) callback({ success: false, error: 'Not authorized' });
+          if (safeCallback) safeCallback({ success: false, error: 'Not authorized' });
           return;
         }
 
         // Validate message payload shape and content
         if (!message || typeof message !== 'object') {
           logger.warn({ socketId: socket.id }, 'Send-message failed: Invalid message payload');
-          if (callback) callback({ success: false, error: 'Invalid message payload' });
+          if (safeCallback) safeCallback({ success: false, error: 'Invalid message payload' });
           return;
         }
 
         // User messages must have ciphertext and iv as base64 strings
         if (message.type === 'user') {
-          if (!message.ciphertext || !message.iv || 
+          if (typeof message.ciphertext !== 'string' || typeof message.iv !== 'string' || 
               !BASE64_REGEX.test(message.ciphertext) || !BASE64_REGEX.test(message.iv)) {
             logger.warn({ message, socketId: socket.id }, 'Send-message failed: Invalid encrypted payload');
-            if (callback) callback({ success: false, error: 'Invalid encrypted payload' });
+            if (safeCallback) safeCallback({ success: false, error: 'Invalid encrypted payload' });
             return;
           }
         }
@@ -325,7 +384,7 @@ export const setupSocketHandlers = async (io) => {
         if (!checkMessageRateLimit(socket.userData.userId)) {
           logger.warn({ userId: socket.userData.userId, socketId: socket.id }, 'Send-message failed: Rate limit exceeded');
           socket.emit('rate_limited', { message: 'Rate limit exceeded. Please slow down.' });
-          if (callback) callback({ success: false, error: 'Rate limit exceeded' });
+          if (safeCallback) safeCallback({ success: false, error: 'Rate limit exceeded' });
           return;
         }
 
@@ -358,10 +417,10 @@ export const setupSocketHandlers = async (io) => {
         };
 
         // Forward optional file-sharing properties if present (Phase 2 feature check)
-        if (message.mediaUrl) {
+        if (message.mediaUrl && typeof message.mediaUrl === 'string') {
           relayedMessage.mediaUrl = DOMPurify.sanitize(message.mediaUrl);
           relayedMessage.mediaType = message.mediaType === 'image' ? 'image' : 'file';
-          relayedMessage.fileName = DOMPurify.sanitize(message.fileName || '');
+          relayedMessage.fileName = typeof message.fileName === 'string' ? DOMPurify.sanitize(message.fileName) : '';
           relayedMessage.fileSize = Number(message.fileSize) || 0;
         }
         
@@ -372,11 +431,11 @@ export const setupSocketHandlers = async (io) => {
         io.to(authenticatedRoom).emit('new-message', relayedMessage);
         
         // Send acknowledgment
-        if (callback) callback({ success: true, messageId: relayedMessage.id });
+        if (safeCallback) safeCallback({ success: true, messageId: relayedMessage.id });
       } catch (error) {
         logger.error(error, 'Error sending message');
         socket.emit('error', { message: 'Failed to send message' });
-        if (callback) callback({ success: false, error: 'Failed to send message' });
+        if (safeCallback) safeCallback({ success: false, error: 'Failed to send message' });
       }
     });
 
@@ -385,6 +444,7 @@ export const setupSocketHandlers = async (io) => {
       try {
         if (!data || typeof data !== 'object') return;
         const { isTyping } = data;
+        if (typeof isTyping !== 'boolean') return;
 
         if (!socket.userData || !socket.userData.roomName) return;
 
@@ -407,6 +467,9 @@ export const setupSocketHandlers = async (io) => {
     // Disconnect event
     socket.on('disconnect', async () => {
       try {
+        // Clean up socket rate limit entry to prevent memory leak
+        joinRateLimits.delete(socket.id);
+
         // Remove session
         await removeSession(socket.id);
 
