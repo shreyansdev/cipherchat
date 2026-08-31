@@ -80,6 +80,18 @@ describe('fileService', () => {
       expect(fs.writeFile).toHaveBeenCalled();
     });
 
+    it('strips unsafe or disallowed extensions', async () => {
+      vi.mocked(fs.access).mockResolvedValue(undefined);
+      vi.mocked(fs.writeFile).mockResolvedValue(undefined);
+
+      const file = { originalname: 'malicious.exe', buffer: Buffer.from('payload') };
+      const result = await saveFile(file, 'file123');
+
+      expect(result).not.toBeNull();
+      expect(result?.filename).toBe('file123');
+      expect(fs.writeFile).toHaveBeenCalled();
+    });
+
     it('creates directory if it does not exist', async () => {
       vi.mocked(fs.access).mockRejectedValue(new Error('No access'));
       vi.mocked(fs.mkdir).mockResolvedValue(undefined);

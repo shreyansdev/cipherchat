@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import mime from 'mime-types';
 import { saveFile, storeFileMetadata, getFileMetadata, getFilePath, deleteFile } from '../services/fileService.js';
+import { getRoomData, verifyRoomPassword } from '../services/roomService.js';
 import logger from '../lib/logger.js';
 
 const router = express.Router();
@@ -50,13 +51,36 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
     const sanitizedRoomName = roomName.trim().toLowerCase();
 
-    const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const { filename } = await saveFile(req.file, fileId);
+    // Verify room exists in Redis before proceeding
+    const roomData = await getRoomData(sanitizedRoomName);
+    if (!roomData) {
+      logger.warn({ roomName: sanitizedRoomName }, 'File upload rejected: Room not found or expired');
+      return res.status(404).json({ error: 'Room not found or expired' });
+    }
 
-    if (!filename) {
+    // If room is password protected, verify room password header
+    if (roomData.passwordHash && roomData.passwordHash !== '') {
+      const roomPassword = req.headers['x-room-password'];
+      if (!roomPassword || typeof roomPassword !== 'string') {
+        logger.warn({ roomName: sanitizedRoomName }, 'File upload rejected: Password required');
+        return res.status(401).json({ error: 'Password required' });
+      }
+      const isPasswordValid = await verifyRoomPassword(sanitizedRoomName, roomPassword);
+      if (!isPasswordValid) {
+        logger.warn({ roomName: sanitizedRoomName }, 'File upload rejected: Invalid password');
+        return res.status(401).json({ error: 'Invalid room password' });
+      }
+    }
+
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const saveResult = await saveFile(req.file, fileId);
+
+    if (!saveResult || !saveResult.filename) {
       logger.error({ fileId, roomName: sanitizedRoomName }, 'Failed to save file to disk');
       return res.status(500).json({ error: 'Failed to save file' });
     }
+
+    const { filename } = saveResult;
 
     // Determine media type
     const mediaType = req.file.mimetype.startsWith('image/') ? 'image' : 'file';
@@ -65,6 +89,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const metadata = {
       fileId,
       filename,
+      roomName: sanitizedRoomName,
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size.toString(),
@@ -100,6 +125,11 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.get('/:fileId', async (req, res) => {
   try {
     const { fileId } = req.params;
+
+    if (!fileId || typeof fileId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+      return res.status(400).json({ error: 'Invalid file ID' });
+    }
+
     const metadata = await getFileMetadata(fileId);
 
     if (!metadata || !metadata.filename) {
@@ -107,12 +137,24 @@ router.get('/:fileId', async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
+    // Verify room has not expired
+    if (metadata.roomName) {
+      const roomData = await getRoomData(metadata.roomName);
+      if (!roomData) {
+        logger.warn({ fileId, roomName: metadata.roomName }, 'File serve rejected: Room expired or deleted');
+        return res.status(404).json({ error: 'File not found or expired' });
+      }
+    }
+
     const filepath = getFilePath(metadata.filename);
     const mimetype = metadata.mimetype || mime.lookup(metadata.filename) || 'application/octet-stream';
     const safeOriginalName = (metadata.originalName || 'file').replace(/["\r\n\\]/g, '');
+    const isImage = mimetype.startsWith('image/');
 
     res.setHeader('Content-Type', mimetype);
-    res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'");
+    res.setHeader('Content-Disposition', `${isImage ? 'inline' : 'attachment'}; filename="${safeOriginalName}"`);
     res.sendFile(filepath);
   } catch (error) {
     logger.error({ error, fileId: req.params.fileId }, 'File serve error');

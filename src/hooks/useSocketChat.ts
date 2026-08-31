@@ -271,12 +271,19 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
         const formData = new FormData();
         formData.append('file', file);
 
+        const historyState = window.history.state?.usr;
+        const roomPassword = historyState?.password || '';
+        const headers: Record<string, string> = {
+          'x-room-name': roomName,
+        };
+        if (roomPassword) {
+          headers['x-room-password'] = roomPassword;
+        }
+
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         const response = await fetch(`${API_URL}/api/files/upload`, {
           method: 'POST',
-          headers: {
-            'x-room-name': roomName,
-          },
+          headers,
           body: formData,
         });
 

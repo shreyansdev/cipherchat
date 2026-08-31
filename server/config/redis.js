@@ -14,7 +14,7 @@ const clientOptions = {
       NUMBER_OF_KEYS: 1,
       SCRIPT: `
         local count = redis.call('SCARD', KEYS[1])
-        local max = tonumber(ARGV[1])
+        local max = tonumber(ARGV[1]) or 50
         if count >= max then return 0 end
         redis.call('SADD', KEYS[1], ARGV[2])
         return 1
@@ -32,8 +32,10 @@ const clientOptions = {
         local userId = ARGV[1]
 
         -- Remove user
-        redis.call('SREM', usersKey, userId)
-        redis.call('HDEL', usersMapKey, userId)
+        if userId then
+          redis.call('SREM', usersKey, userId)
+          redis.call('HDEL', usersMapKey, userId)
+        end
 
         -- Get remaining count
         local count = redis.call('SCARD', usersKey)
@@ -53,7 +55,7 @@ const clientOptions = {
         local messagesKey = KEYS[1]
         local metaKey = KEYS[2]
         local messageData = ARGV[1]
-        local maxHistory = tonumber(ARGV[2])
+        local maxHistory = tonumber(ARGV[2]) or 500
 
         -- Check if room exists
         local roomExists = redis.call('EXISTS', metaKey)
@@ -84,6 +86,11 @@ const clientOptions = {
       SCRIPT: `
         local fileKey = KEYS[1]
         local metaKey = KEYS[2]
+
+        -- Check if args are present
+        if #ARGV == 0 then
+            return 0
+        end
 
         -- Check if room exists
         local roomExists = redis.call('EXISTS', metaKey)

@@ -53,14 +53,28 @@ export const getFileMetadata = async (fileId) => {
   }
 };
 
+const ALLOWED_EXTENSIONS = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.webp',
+  '.pdf',
+  '.doc',
+  '.docx',
+  '.txt',
+]);
+
 /**
  * Save uploaded file to disk
  */
 export const saveFile = async (file, fileId) => {
   try {
     await ensureUploadsDir();
-    const ext = path.extname(file.originalname);
-    const filename = `${fileId}${ext}`;
+    const rawExt = path.extname(file.originalname || '').toLowerCase();
+    const ext = ALLOWED_EXTENSIONS.has(rawExt) ? rawExt : '';
+    const safeFileId = path.basename(fileId).replace(/[^a-zA-Z0-9_-]/g, '');
+    const filename = `${safeFileId}${ext}`;
     const filepath = path.join(UPLOADS_DIR, filename);
     
     await fs.writeFile(filepath, file.buffer);
