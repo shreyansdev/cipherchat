@@ -37,14 +37,17 @@ function fromBase64(base64: string): Uint8Array {
  */
 export async function deriveKey(password: string, roomSlug: string): Promise<CryptoKey> {
   const cryptoObj = globalThis.crypto;
-  const actualPassword = password || roomSlug;
-  if (!actualPassword || !roomSlug) {
+  const normalizedPassword = (password || '').normalize('NFKC');
+  const normalizedSlug = (roomSlug || '').trim().toLowerCase().normalize('NFKC');
+  const actualPassword = normalizedPassword || normalizedSlug;
+
+  if (!actualPassword || !normalizedSlug) {
     throw new Error('Password and room slug are required for key derivation');
   }
 
   const encoder = new TextEncoder();
   const passwordData = encoder.encode(actualPassword);
-  const salt = encoder.encode(roomSlug);
+  const salt = encoder.encode(normalizedSlug);
 
   const baseKey = await cryptoObj.subtle.importKey(
     'raw',
@@ -77,7 +80,7 @@ export async function encryptMessage(
 ): Promise<{ ciphertext: string; iv: string }> {
   const cryptoObj = globalThis.crypto;
   const encoder = new TextEncoder();
-  const data = encoder.encode(plaintext);
+  const data = encoder.encode(plaintext || '');
   const iv = cryptoObj.getRandomValues(new Uint8Array(12));
 
   const encryptedBuffer = await cryptoObj.subtle.encrypt(
@@ -118,9 +121,7 @@ export async function decryptMessage(
     );
 
     return decoder.decode(decryptedBuffer);
-  } catch (error) {
-    // Log for debugging but throw a generic error to the UI
-    console.error('Decryption internal error:', error);
+  } catch {
     throw new Error('Decryption failed: Incorrect key or corrupted data');
   }
 }

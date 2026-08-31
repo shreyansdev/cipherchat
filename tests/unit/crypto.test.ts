@@ -18,17 +18,23 @@ describe('Cryptography Module (AES-256-GCM)', () => {
       expect(decrypted).toBe(plaintext);
     });
 
-    it('should fall back to roomSlug as password if password is empty', async () => {
-      const key = await deriveKey('', roomSlug);
-      expect(key).toBeDefined();
+    it('should fall back to roomSlug as password if password is empty or undefined', async () => {
+      const key1 = await deriveKey('', roomSlug);
+      expect(key1).toBeDefined();
+
+      const key2 = await deriveKey(undefined as any, roomSlug);
+      expect(key2).toBeDefined();
     });
 
-    it('should throw if roomSlug is empty', async () => {
+    it('should throw if roomSlug is empty or null/undefined', async () => {
       await expect(deriveKey('password', '')).rejects.toThrow('Password and room slug are required for key derivation');
+      await expect(deriveKey('password', null as any)).rejects.toThrow('Password and room slug are required for key derivation');
+      await expect(deriveKey('password', '   ')).rejects.toThrow('Password and room slug are required for key derivation');
     });
 
     it('should throw if both password and roomSlug are empty', async () => {
       await expect(deriveKey('', '')).rejects.toThrow('Password and room slug are required for key derivation');
+      await expect(deriveKey(null as any, null as any)).rejects.toThrow('Password and room slug are required for key derivation');
     });
 
     it('should fail to decrypt if the password is different', async () => {
@@ -37,6 +43,20 @@ describe('Cryptography Module (AES-256-GCM)', () => {
       
       const key2 = await deriveKey('wrong-password', roomSlug);
       await expect(decryptMessage(ciphertext, iv, key2)).rejects.toThrow();
+    });
+
+    it('should derive identical keys for composed vs decomposed Unicode equivalents (NFKC normalization)', async () => {
+      // Decomposed 'e' + combining acute accent vs precomposed 'é'
+      const decomposedPassword = 'cafe\u0301-secret';
+      const precomposedPassword = 'caf\u00E9-secret';
+      
+      const key1 = await deriveKey(decomposedPassword, roomSlug);
+      const { ciphertext, iv } = await encryptMessage(plaintext, key1);
+
+      const key2 = await deriveKey(precomposedPassword, roomSlug);
+      const decrypted = await decryptMessage(ciphertext, iv, key2);
+
+      expect(decrypted).toBe(plaintext);
     });
 
     it('should fail to decrypt if the roomSlug is different', async () => {

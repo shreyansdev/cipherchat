@@ -6,7 +6,20 @@ const isProduction = nodeEnv === 'production';
 const logger = pino({
   level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
   redact: {
-    paths: ['password', 'passwordHash', 'ciphertext', 'key', 'authorization', 'req.headers.authorization'],
+    paths: [
+      'password',
+      'passwordHash',
+      'ciphertext',
+      'key',
+      'authorization',
+      'req.headers.authorization',
+      'req.headers["x-room-password"]',
+      'req.headers.x-room-password',
+      '*.password',
+      '*.passwordHash',
+      '*.ciphertext',
+      '*.iv',
+    ],
     placeholder: '[Redacted]',
   },
   base: {

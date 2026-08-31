@@ -7,17 +7,29 @@ export function cn(...inputs: ClassValue[]): string {
 
 /**
  * Validates that a URL uses a safe protocol (http: or https:) or is a
- * same-origin relative path.  Blocks dangerous schemes like javascript:,
- * data:, vbscript:, etc.
+ * safe relative path. Blocks dangerous schemes like javascript:, data:,
+ * vbscript:, backslash path normalization bypasses, and control characters.
  */
 export const isSafeUrl = (url?: string): boolean => {
-  if (!url) return false;
-  try {
-    // Allow relative paths starting with / but not protocol-relative //
-    if (url.startsWith('/') && !url.startsWith('//')) {
-      return true;
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+
+  // Block ASCII control characters (0-31, 127) and backslashes
+  for (let i = 0; i < trimmed.length; i++) {
+    const code = trimmed.charCodeAt(i);
+    if ((code >= 0 && code <= 31) || code === 127 || code === 92) {
+      return false;
     }
-    const parsed = new URL(url);
+  }
+
+  // Allow safe relative paths starting with a single '/'
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
     return parsed.protocol === 'http:' || parsed.protocol === 'https:';
   } catch {
     return false;
