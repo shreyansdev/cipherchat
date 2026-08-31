@@ -45,6 +45,10 @@ test-results/
 blob-report/
 *.zip
 
+# Uploaded files
+server/uploads/*
+!server/uploads/.gitkeep
+
 # AI Agent / CLI temporary artifacts
 .gemini/
 .system_generated/
