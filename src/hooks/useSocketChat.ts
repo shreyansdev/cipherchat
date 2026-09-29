@@ -12,7 +12,7 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
   sendMessage: (text: string, file?: File) => Promise<void>;
   sendTypingIndicator: (isTyping: boolean) => void;
 } => {
-  const { dispatch, encryptionKey } = useChat();
+  const { dispatch, encryptionKey, roomPassword } = useChat();
   const socketRef = useRef<Socket | null>(null);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const isMounted = useRef(true);
@@ -77,14 +77,13 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      const historyState = window.history.state?.usr;
-      const roomPassword = historyState?.password || '';
+      const activePassword = roomPassword || window.history.state?.usr?.password || '';
 
       const payload: JoinRoomPayload = {
         roomName,
         userName: currentUser.name,
         userId: currentUser.id,
-        password: roomPassword,
+        password: activePassword,
       };
       socket.emit('join-room', payload);
     };
@@ -271,13 +270,12 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
         const formData = new FormData();
         formData.append('file', file);
 
-        const historyState = window.history.state?.usr;
-        const roomPassword = historyState?.password || '';
+        const activePassword = roomPassword || window.history.state?.usr?.password || '';
         const headers: Record<string, string> = {
           'x-room-name': roomName,
         };
-        if (roomPassword) {
-          headers['x-room-password'] = roomPassword;
+        if (activePassword) {
+          headers['x-room-password'] = activePassword;
         }
 
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';

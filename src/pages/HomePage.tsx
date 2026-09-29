@@ -419,6 +419,15 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                 />
               </div>
 
+              {!isProtected && (
+                <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-[11px] font-mono text-amber-300/90 leading-tight">
+                    <strong className="text-amber-300">Public Channel:</strong> Anyone who discovers this room slug can decrypt and read messages. Set a password for end-to-end confidential chats.
+                  </p>
+                </div>
+              )}
+
               {isProtected && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}

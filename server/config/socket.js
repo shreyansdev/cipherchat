@@ -47,9 +47,32 @@ const checkMessageRateLimit = (userId) => {
   return true;
 };
 
-const checkJoinRateLimit = (socketId) => {
+// Rate limiting for typing indicator events (Anti-Flood protection)
+const typingRateLimits = new Map();
+const TYPING_RATE_LIMIT = 2; // max 2 typing state changes
+const TYPING_RATE_WINDOW = 2000; // per 2 seconds
+
+const checkTypingRateLimit = (userId) => {
   const now = Date.now();
-  const timestamps = joinRateLimits.get(socketId) || [];
+  const timestamps = typingRateLimits.get(userId) || [];
+  const windowStart = now - TYPING_RATE_WINDOW;
+  const recentTimestamps = timestamps.filter(ts => ts > windowStart);
+  if (recentTimestamps.length >= TYPING_RATE_LIMIT) return false;
+  recentTimestamps.push(now);
+  typingRateLimits.set(userId, recentTimestamps);
+  return true;
+};
+
+const getClientIp = (socket) => {
+  return socket.handshake?.headers?.['cf-connecting-ip'] ||
+         socket.handshake?.headers?.['x-forwarded-for']?.split(',')[0].trim() ||
+         socket.handshake?.address ||
+         socket.id;
+};
+
+const checkJoinRateLimit = (clientIp) => {
+  const now = Date.now();
+  const timestamps = joinRateLimits.get(clientIp) || [];
   const windowStart = now - JOIN_RATE_WINDOW;
   const recentTimestamps = timestamps.filter(ts => ts > windowStart);
 
@@ -58,20 +81,24 @@ const checkJoinRateLimit = (socketId) => {
   }
 
   recentTimestamps.push(now);
-  joinRateLimits.set(socketId, recentTimestamps);
+  joinRateLimits.set(clientIp, recentTimestamps);
   return true;
 };
 
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
 const ROOM_NAME_REGEX = /^[a-z0-9_-]+$/;
+const RESERVED_NICKNAMES = new Set(['system', 'admin', 'administrator', 'moderator', 'support', 'cipherchat', 'bot']);
+const MAX_CIPHERTEXT_LENGTH = 10000; // Hard limit on encrypted message length (prevents Redis RAM exhaustion)
+const MAX_IV_LENGTH = 64;
 
 let pubClient;
 let subClient;
 
 // Periodic cleaner to prevent memory leak from stale rate-limit entries
 const rateLimitCleanerInterval = setInterval(() => {
-  const now = Date.now();
-  const msgWindowStart = now - MESSAGE_RATE_WINDOW;
+  try {
+    const now = Date.now();
+    const msgWindowStart = now - MESSAGE_RATE_WINDOW;
   for (const [userId, timestamps] of messageRateLimits.entries()) {
     const active = timestamps.filter(ts => ts > msgWindowStart);
     if (active.length === 0) {
@@ -81,14 +108,27 @@ const rateLimitCleanerInterval = setInterval(() => {
     }
   }
 
-  const joinWindowStart = now - JOIN_RATE_WINDOW;
-  for (const [socketId, timestamps] of joinRateLimits.entries()) {
-    const active = timestamps.filter(ts => ts > joinWindowStart);
-    if (active.length === 0) {
-      joinRateLimits.delete(socketId);
-    } else {
-      joinRateLimits.set(socketId, active);
+    const joinWindowStart = now - JOIN_RATE_WINDOW;
+    for (const [clientIp, timestamps] of joinRateLimits.entries()) {
+      const active = timestamps.filter(ts => ts > joinWindowStart);
+      if (active.length === 0) {
+        joinRateLimits.delete(clientIp);
+      } else {
+        joinRateLimits.set(clientIp, active);
+      }
     }
+
+    const typingWindowStart = now - TYPING_RATE_WINDOW;
+    for (const [userId, timestamps] of typingRateLimits.entries()) {
+      const active = timestamps.filter(ts => ts > typingWindowStart);
+      if (active.length === 0) {
+        typingRateLimits.delete(userId);
+      } else {
+        typingRateLimits.set(userId, active);
+      }
+    }
+  } catch (cleanerErr) {
+    logger.error(cleanerErr, 'Rate limit cleaner error');
   }
 }, 60000);
 rateLimitCleanerInterval.unref();
@@ -97,6 +137,7 @@ export const closeSocketServices = async () => {
   clearInterval(rateLimitCleanerInterval);
   messageRateLimits.clear();
   joinRateLimits.clear();
+  typingRateLimits.clear();
 
   for (const timer of emptyRoomTimers.values()) {
     clearTimeout(timer);
@@ -152,9 +193,10 @@ export const setupSocketHandlers = async (io) => {
           return;
         }
 
-        // Enforce rate limiting on join attempts (Anti-Brute Force / DoS defense)
-        if (!checkJoinRateLimit(socket.id)) {
-          logger.warn({ socketId: socket.id }, 'Join-room failed: Join rate limit exceeded');
+        // Enforce rate limiting on join attempts (Anti-Brute Force / DoS defense per IP)
+        const clientIp = getClientIp(socket);
+        if (!checkJoinRateLimit(clientIp)) {
+          logger.warn({ clientIp, socketId: socket.id }, 'Join-room failed: Join rate limit exceeded');
           socket.emit('error', { message: 'Too many join attempts. Please wait.', code: 'RATE_LIMITED' });
           return;
         }
@@ -164,14 +206,7 @@ export const setupSocketHandlers = async (io) => {
         const sanitizedUserName = DOMPurify.sanitize(userName).trim();
         const sanitizedUserId = DOMPurify.sanitize(userId).trim();
         
-        const SLUG_REGEX = /^[a-z]+-[a-z]+-[0-9]{4}$/;
-        if (!SLUG_REGEX.test(sanitizedRoomName)) {
-          logger.warn({ sanitizedRoomName, socketId: socket.id }, 'Join-room failed: Invalid room slug format');
-          socket.emit('error', { message: 'Invalid room slug format' });
-          return;
-        }
-
-        if (sanitizedRoomName.length > 64 || !ROOM_NAME_REGEX.test(sanitizedRoomName)) {
+        if (!sanitizedRoomName || sanitizedRoomName.length > 64 || !ROOM_NAME_REGEX.test(sanitizedRoomName)) {
           logger.warn({ sanitizedRoomName, socketId: socket.id }, 'Join-room failed: Invalid room identifier');
           socket.emit('error', { message: 'Invalid room identifier' });
           return;
@@ -180,6 +215,12 @@ export const setupSocketHandlers = async (io) => {
         if (sanitizedUserName.length > 32) {
           logger.warn({ sanitizedUserName, socketId: socket.id }, 'Join-room failed: Nickname too long');
           socket.emit('error', { message: 'Nickname too long (max 32 characters)' });
+          return;
+        }
+
+        if (RESERVED_NICKNAMES.has(sanitizedUserName.toLowerCase())) {
+          logger.warn({ sanitizedUserName, socketId: socket.id }, 'Join-room failed: Reserved nickname');
+          socket.emit('error', { message: 'This nickname is reserved. Please choose another.', code: 'INVALID_NICKNAME' });
           return;
         }
         
@@ -370,12 +411,13 @@ export const setupSocketHandlers = async (io) => {
           return;
         }
 
-        // User messages must have ciphertext and iv as base64 strings
+        // User messages must have ciphertext and iv as base64 strings with strict bounds (prevent Redis OOM)
         if (message.type === 'user') {
           if (typeof message.ciphertext !== 'string' || typeof message.iv !== 'string' || 
+              message.ciphertext.length > MAX_CIPHERTEXT_LENGTH || message.iv.length > MAX_IV_LENGTH ||
               !BASE64_REGEX.test(message.ciphertext) || !BASE64_REGEX.test(message.iv)) {
-            logger.warn({ message, socketId: socket.id }, 'Send-message failed: Invalid encrypted payload');
-            if (safeCallback) safeCallback({ success: false, error: 'Invalid encrypted payload' });
+            logger.warn({ socketId: socket.id }, 'Send-message failed: Invalid or oversized encrypted payload');
+            if (safeCallback) safeCallback({ success: false, error: 'Invalid or oversized encrypted payload' });
             return;
           }
         }
@@ -446,7 +488,10 @@ export const setupSocketHandlers = async (io) => {
         const { isTyping } = data;
         if (typeof isTyping !== 'boolean') return;
 
-        if (!socket.userData || !socket.userData.roomName) return;
+        if (!socket.userData || !socket.userData.roomName || !socket.userData.userId) return;
+
+        // Anti-Flood rate limiting on typing events
+        if (!checkTypingRateLimit(socket.userData.userId)) return;
 
         const authenticatedRoom = socket.userData.roomName;
         const { userId, userName } = socket.userData;

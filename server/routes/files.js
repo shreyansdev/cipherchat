@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import mime from 'mime-types';
+import crypto from 'crypto';
 import { saveFile, storeFileMetadata, getFileMetadata, getFilePath, deleteFile } from '../services/fileService.js';
 import { getRoomData, verifyRoomPassword } from '../services/roomService.js';
 import logger from '../lib/logger.js';
@@ -72,7 +73,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       }
     }
 
-    const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const fileId = 'file-' + crypto.randomBytes(16).toString('hex');
     const saveResult = await saveFile(req.file, fileId);
 
     if (!saveResult || !saveResult.filename) {
@@ -137,12 +138,26 @@ router.get('/:fileId', async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    // Verify room has not expired
+    // Verify room has not expired and enforce password check if protected
     if (metadata.roomName) {
       const roomData = await getRoomData(metadata.roomName);
       if (!roomData) {
         logger.warn({ fileId, roomName: metadata.roomName }, 'File serve rejected: Room expired or deleted');
         return res.status(404).json({ error: 'File not found or expired' });
+      }
+
+      // If room is password protected, require password via header or query param
+      if (roomData.passwordHash && roomData.passwordHash !== '') {
+        const roomPassword = req.headers['x-room-password'] || req.query.password;
+        if (!roomPassword || typeof roomPassword !== 'string') {
+          logger.warn({ fileId, roomName: metadata.roomName }, 'File serve rejected: Password required');
+          return res.status(401).json({ error: 'Password required' });
+        }
+        const isPasswordValid = await verifyRoomPassword(metadata.roomName, roomPassword);
+        if (!isPasswordValid) {
+          logger.warn({ fileId, roomName: metadata.roomName }, 'File serve rejected: Invalid password');
+          return res.status(401).json({ error: 'Invalid room password' });
+        }
       }
     }
 

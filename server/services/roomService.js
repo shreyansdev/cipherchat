@@ -4,6 +4,7 @@ import logger from '../lib/logger.js';
 import crypto from 'crypto';
 import { adjectives, nouns } from '../lib/wordlist.js';
 import { addUser, removeUser, getRoomUsersList } from './presenceService.js';
+import { deleteRoomFiles } from './fileService.js';
 
 const BCRYPT_COST = parseInt(process.env.BCRYPT_COST) || 12;
 
@@ -163,6 +164,7 @@ export const deleteRoom = async (roomName) => {
     await redisClient.del(usersKey);
     await redisClient.del(usersMapKey);
     await redisClient.del(messagesKey);
+    await deleteRoomFiles(slug);
     
     logger.info({ roomName: slug }, 'Room deleted successfully');
     return true;

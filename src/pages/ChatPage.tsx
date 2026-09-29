@@ -63,6 +63,12 @@ const ChatPage: React.FC = () => {
         try {
           await setupEncryption(password, roomName);
           if (!active) return;
+          // Security: Cleanse plaintext password from browser history state
+          if (window.history.state?.usr?.password) {
+            const sanitizedUsr = { ...window.history.state.usr };
+            delete sanitizedUsr.password;
+            window.history.replaceState({ ...window.history.state, usr: sanitizedUsr }, '');
+          }
           const userId = `user-${Math.random().toString(36).substring(2, 9)}`;
           setCurrentUser({ id: userId, name: displayName });
         } catch (error) {
@@ -113,9 +119,11 @@ const ChatPage: React.FC = () => {
   const handlePasswordSubmit = async (password: string) => {
     try {
       await verifyRoomPassword(roomName!, password);
+      await setupEncryption(password, roomName!);
       setShowPasswordModal(false);
-      navigate(`/chat/${roomName}`, { state: { displayName: displayNameInput.trim(), password } });
       setNeedsDisplayName(false);
+      const userId = `user-${Math.random().toString(36).substring(2, 9)}`;
+      setCurrentUser({ id: userId, name: displayNameInput.trim() });
     } catch (err) {
       const errorCode = err instanceof Error ? err.message : '';
       if (errorCode === ERROR_CODES.WRONG_PASSWORD) {

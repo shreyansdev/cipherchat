@@ -96,19 +96,24 @@ const ChatContext = createContext<{
   encryptionKey: CryptoKey | null;
   setupEncryption: (password: string, roomSlug: string) => Promise<void>;
   clearEncryption: () => void;
+  roomPassword: string;
+  setRoomPassword: (pwd: string) => void;
 } | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
+  const [roomPassword, setRoomPassword] = useState<string>('');
 
   const setupEncryption = useCallback(async (password: string, roomSlug: string) => {
     const key = await deriveKey(password, roomSlug);
     setEncryptionKey(key);
+    setRoomPassword(password);
   }, []);
 
   const clearEncryption = useCallback(() => {
     setEncryptionKey(null);
+    setRoomPassword('');
   }, []);
 
   const value = useMemo(() => ({
@@ -116,8 +121,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     dispatch,
     encryptionKey,
     setupEncryption,
-    clearEncryption
-  }), [state, encryptionKey, setupEncryption, clearEncryption]);
+    clearEncryption,
+    roomPassword,
+    setRoomPassword,
+  }), [state, encryptionKey, setupEncryption, clearEncryption, roomPassword]);
 
   return (
     <ChatContext.Provider value={value}>

@@ -5,6 +5,11 @@ vi.mock('../../../server/config/redis.js', () => ({
   default: {
     storeFileMetadata: vi.fn(),
     hGetAll: vi.fn(),
+    sAdd: vi.fn(),
+    ttl: vi.fn(),
+    expire: vi.fn(),
+    sMembers: vi.fn(),
+    del: vi.fn(),
   },
 }));
 
@@ -15,10 +20,11 @@ vi.mock('fs/promises', () => ({
     mkdir: vi.fn(),
     writeFile: vi.fn(),
     unlink: vi.fn(),
+    readdir: vi.fn(),
   },
 }));
 
-import { storeFileMetadata, getFileMetadata, saveFile, deleteFile, getFilePath } from '../../../server/services/fileService.js';
+import { storeFileMetadata, getFileMetadata, saveFile, deleteFile, getFilePath, deleteRoomFiles, cleanupOrphanedFiles } from '../../../server/services/fileService.js';
 import redisClient from '../../../server/config/redis.js';
 import fs from 'fs/promises';
 
@@ -133,6 +139,44 @@ describe('fileService', () => {
     it('returns correct full path', () => {
       const result = getFilePath('file123.png');
       expect(result).toContain('file123.png');
+    });
+  });
+
+  describe('deleteRoomFiles', () => {
+    it('fetches filenames from redis and unlinks each file', async () => {
+      vi.mocked(redisClient.sMembers).mockResolvedValue(['file1.png', 'file2.pdf']);
+      vi.mocked(fs.unlink).mockResolvedValue(undefined);
+      vi.mocked(redisClient.del).mockResolvedValue(1);
+
+      const result = await deleteRoomFiles('test-room');
+      expect(result).toBe(true);
+      expect(redisClient.sMembers).toHaveBeenCalledWith('room:test-room:files');
+      expect(fs.unlink).toHaveBeenCalledTimes(2);
+      expect(redisClient.del).toHaveBeenCalledWith('room:test-room:files');
+    });
+
+    it('handles redis errors gracefully and returns false', async () => {
+      vi.mocked(redisClient.sMembers).mockRejectedValue(new Error('Redis failure'));
+      const result = await deleteRoomFiles('test-room');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('cleanupOrphanedFiles', () => {
+    it('skips .gitkeep and non-fileId entries, deletes files without redis metadata', async () => {
+      vi.mocked(fs.access).mockResolvedValue(undefined);
+      vi.mocked(fs.readdir).mockResolvedValue(['.gitkeep', 'other.txt', 'file-12345.png', 'file-active.jpg']);
+      vi.mocked(redisClient.hGetAll).mockImplementation(async (key) => {
+        if (key === 'file:file-12345') return {}; // Expired/orphaned
+        if (key === 'file:file-active') return { filename: 'file-active.jpg' };
+        return {};
+      });
+      vi.mocked(fs.unlink).mockResolvedValue(undefined);
+
+      await cleanupOrphanedFiles();
+
+      expect(fs.unlink).toHaveBeenCalledWith(expect.stringContaining('file-12345.png'));
+      expect(fs.unlink).not.toHaveBeenCalledWith(expect.stringContaining('file-active.jpg'));
     });
   });
 });
