@@ -53,3 +53,11 @@ server/uploads/*
 .gemini/
 .system_generated/
 scratch/
+
+# Internal documentation & scripts
+AUDIT_REPORT.md
+DESIGN.md
+GEMINI.md
+REFACTORING_LOG.md
+scripts/capture_screenshots.js
+
