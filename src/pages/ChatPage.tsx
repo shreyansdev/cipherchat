@@ -37,6 +37,22 @@ const ChatPage: React.FC = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [rateLimitSeconds, setRateLimitSeconds] = useState(0);
 
+  // Security & Privacy: Ensure crawlers never index active or direct-access chat rooms
+  useEffect(() => {
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta');
+      robotsMeta.setAttribute('name', 'robots');
+      document.head.appendChild(robotsMeta);
+    }
+    const previousContent = robotsMeta.getAttribute('content') || 'index, follow';
+    robotsMeta.setAttribute('content', 'noindex, nofollow');
+
+    return () => {
+      robotsMeta.setAttribute('content', previousContent);
+    };
+  }, []);
+
   useEffect(() => {
     let active = true;
     const displayName = location.state?.displayName;

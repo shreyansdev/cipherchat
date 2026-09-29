@@ -1,0 +1,14 @@
+# robots.txt for CipherChat
+# https://cipherchat.com
+
+User-agent: *
+Allow: /
+Allow: /favicon.svg
+Allow: /site.webmanifest
+
+# Security & Privacy: Never allow search crawlers to index private ephemeral chat rooms or backend APIs
+Disallow: /chat/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://cipherchat.com/sitemap.xml
