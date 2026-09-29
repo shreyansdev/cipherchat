@@ -11,6 +11,8 @@
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
     "preview": "vite preview",
+    "pages:deploy": "wrangler pages deploy dist",
+    "pages:dev": "wrangler pages dev dist",
     "audit:ci": "npm audit --audit-level=moderate"
   },
   "dependencies": {
@@ -52,7 +54,8 @@
     "tailwindcss": "^3.4.4",
     "typescript": "^5.2.2",
     "vite": "^6.4.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "wrangler": "^4.143.0"
   },
   "overrides": {
     "esbuild": "^0.25.0",

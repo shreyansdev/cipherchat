@@ -1,0 +1,10 @@
+# Cloudflare Pages / Wrangler Configuration
+name = "cipherchat"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "./dist"
+
+[vars]
+# Production backend API & Socket.IO relay URL
+# Override this variable in the Cloudflare Pages Dashboard (Settings -> Environment Variables)
+# or when deploying with: wrangler pages secret put VITE_SERVER_URL
+VITE_SERVER_URL = ""
