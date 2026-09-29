@@ -49,12 +49,30 @@ app.use(pinoHttp({
   },
 }));
 
-const CORS_ORIGIN = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5173';
+const rawOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+].filter(Boolean).map((origin) => origin.trim());
+
+const allowedOrigins = [...new Set(rawOrigins)];
+
+const corsOriginHandler = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+};
 
 // Socket.IO setup with CORS and transport security
 const io = new Server(httpServer, {
   cors: {
-    origin: CORS_ORIGIN,
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -71,8 +89,8 @@ app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    connectSrc: ["'self'", CORS_ORIGIN],
-    imgSrc: ["'self'", 'data:', CORS_ORIGIN],
+    connectSrc: ["'self'", ...allowedOrigins],
+    imgSrc: ["'self'", 'data:', ...allowedOrigins],
     scriptSrc: ["'self'"],
     styleSrc: ["'self'", "'unsafe-inline'"],
     upgradeInsecureRequests: [],
@@ -95,13 +113,15 @@ const apiLimiter = rateLimit({
 
 const roomCreationLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 5, // 5 room creations per minute per IP
+  max: parseInt(process.env.ROOM_CREATION_MAX_REQUESTS) || (process.env.NODE_ENV === 'test' ? 50 : 15),
   message: { error: 'Too many room creations, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Middleware
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: corsOriginHandler,
   credentials: true,
 }));
 app.use(express.json());

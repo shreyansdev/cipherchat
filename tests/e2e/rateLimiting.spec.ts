@@ -106,9 +106,11 @@ test.describe('Rate Limiting', () => {
     
     // 1. Send 61 POST /api/rooms requests within the rate limit window
     // Firing them concurrently ensures they all hit within the shortest possible window.
+    const testIp = '198.51.100.99';
     for (let i = 1; i <= 61; i++) {
       requests.push(
         request.post('/api/rooms/create', {
+          headers: { 'x-forwarded-for': testIp },
           data: { roomName: `rest-rate-limit-${Date.now()}-${i}` }
         })
       );

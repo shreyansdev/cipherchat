@@ -162,7 +162,7 @@ jobs:
           TEST_BASE_URL: http://localhost:4173
         run: |
           # Start Backend Server
-          PORT=3001 REDIS_URL=redis://localhost:6379 TEST_MAX_USERS=2 node server/server.js &
+          PORT=3001 REDIS_URL=redis://localhost:6379 TEST_MAX_USERS=2 NODE_ENV=test node server/server.js &
           
           # Start Frontend Preview Server
           npm run preview &
