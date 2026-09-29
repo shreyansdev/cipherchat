@@ -114,15 +114,14 @@ jobs:
           cache: 'npm'
 
       - name: Audit Root Dependencies
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
       - name: Audit Server Dependencies
-        run: npm audit --audit-level=moderate --prefix server
+        run: npm audit --audit-level=high --prefix server
 
   e2e:
     name: E2E Tests (Playwright & Redis)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'master')
     services:
       redis:
         image: redis:7-alpine
@@ -150,6 +149,8 @@ jobs:
         run: npm ci --prefix server
 
       - name: Build Frontend
+        env:
+          VITE_TEST_MIN_TTL: "2"
         run: npm run build
 
       - name: Install Playwright Browsers
@@ -161,7 +162,7 @@ jobs:
           TEST_BASE_URL: http://localhost:4173
         run: |
           # Start Backend Server
-          PORT=3001 REDIS_URL=redis://localhost:6379 node server/server.js &
+          PORT=3001 REDIS_URL=redis://localhost:6379 TEST_MAX_USERS=2 node server/server.js &
           
           # Start Frontend Preview Server
           npm run preview &

@@ -22,7 +22,6 @@ test.describe('Security Tests', () => {
   // Test 1: XSS payload in message
   // ───────────────────────────────────────────────────────────────────────────
   test('XSS payload in message is sanitized and not executed', async ({ browser }) => {
-    const roomName = `xss-msg-test-${Date.now()}`;
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
 
@@ -32,7 +31,7 @@ test.describe('Security Tests', () => {
     // 1. User A creates a room
     await pageA.goto('/');
     await pageA.click('text=[CREATE SECURE ROOM]');
-    await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
     await pageA.fill('input[placeholder="anonymous-user"]', 'User A');
     await pageA.click('text=[INITIALIZE ROOM]');
 
@@ -77,9 +76,7 @@ test.describe('Security Tests', () => {
 
   // ───────────────────────────────────────────────────────────────────────────
   // Test 2: XSS payload in nickname
-  // ───────────────────────────────────────────────────────────────────────────
   test('XSS payload in nickname does not fire alert', async ({ browser }) => {
-    const roomName = `xss-nick-test-${Date.now()}`;
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
 
@@ -98,7 +95,7 @@ test.describe('Security Tests', () => {
     // 1. User A creates the room
     await pageA.goto('/');
     await pageA.click('text=[CREATE SECURE ROOM]');
-    await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
     await pageA.fill('input[placeholder="anonymous-user"]', 'User A');
     await pageA.click('text=[INITIALIZE ROOM]');
 
@@ -211,7 +208,6 @@ test.describe('Security Tests', () => {
   test('Replay attack on message broadcasts message again (expected for E2EE)', async ({ browser }) => {
     // Note: Replay protection requires sequence numbers, which is a Phase 3 consideration.
     // TODO: Implement sequence numbers or timestamp window checking on the client/server in Phase 3.
-    const roomName = `replay-test-${Date.now()}`;
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
 
@@ -221,7 +217,7 @@ test.describe('Security Tests', () => {
     // 1. User A creates the room
     await pageA.goto('/');
     await pageA.click('text=[CREATE SECURE ROOM]');
-    await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
     await pageA.fill('input[placeholder="anonymous-user"]', 'User A');
     await pageA.click('text=[INITIALIZE ROOM]');
 

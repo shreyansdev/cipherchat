@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "pages:deploy": "wrangler pages deploy dist",
     "pages:dev": "wrangler pages dev dist",
-    "audit:ci": "npm audit --audit-level=moderate"
+    "audit:ci": "npm audit --audit-level=high"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -59,6 +59,7 @@
   },
   "overrides": {
     "esbuild": "^0.25.0",
-    "tar": "^7.5.16"
+    "tar": "^7.5.16",
+    "undici": "^7.30.0"
   }
 }

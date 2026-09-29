@@ -29,12 +29,10 @@ test.describe('Room Expiry', () => {
     page,
     browser,
   }) => {
-    const roomName = `expire-test-${Date.now()}`;
-
     // ── Step 1: Browser A creates a room with the minimum test TTL (2 s) ──
     await page.goto('/');
     await page.click('text=[CREATE SECURE ROOM]');
-    await page.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await page.inputValue('input[placeholder="enter-room-name"]');
     await page.fill('input[placeholder="anonymous-user"]', 'UserA');
 
     // Enable password protection (required to expose TTL selector)
@@ -115,8 +113,6 @@ test.describe('Room Expiry', () => {
   test('A user already in a room is gracefully disconnected when the room expires', async ({
     page,
   }) => {
-    const roomName = `graceful-test-${Date.now()}`;
-
     // ── Instrument console & page-error listeners ──
     // Any console.error() calls are captured so we can assert a clean disconnect.
     const consoleErrors: string[] = [];
@@ -135,7 +131,7 @@ test.describe('Room Expiry', () => {
     // ── Step 1: User A creates + joins a room with 2 s TTL ──
     await page.goto('/');
     await page.click('text=[CREATE SECURE ROOM]');
-    await page.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await page.inputValue('input[placeholder="enter-room-name"]');
     await page.fill('input[placeholder="anonymous-user"]', 'UserA');
     await page.click('#protected', { force: true });
     await page.fill('input[placeholder="••••••••"]', 'testPassword123');

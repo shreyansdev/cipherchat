@@ -2,8 +2,6 @@ import { test, expect } from '@playwright/test';
 import { createClient } from 'redis';
 
 test('Two users can create a room, join it, and exchange encrypted messages', async ({ browser }) => {
-  const timestamp = Date.now();
-  const roomName = `test-room-${timestamp}`;
   const password = 'securePass1!';
   
   // Create two separate browser contexts for User A and User B
@@ -18,7 +16,7 @@ test('Two users can create a room, join it, and exchange encrypted messages', as
 
   // 2. Browser A creates a room
   await pageA.click('text=[CREATE SECURE ROOM]');
-  await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+  const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
   await pageA.fill('input[placeholder="anonymous-user"]', 'User A');
   await pageA.click('#protected', { force: true });
   await pageA.fill('input[placeholder="••••••••"]', password);

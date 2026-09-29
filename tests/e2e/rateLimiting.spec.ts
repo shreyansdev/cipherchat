@@ -6,8 +6,6 @@ test.describe('Rate Limiting', () => {
   // Test 1: Socket message rate limiting
   // ───────────────────────────────────────────────────────────────────────────
   test('Socket message rate limiting drops excess messages and notifies sender', async ({ browser }) => {
-    const roomName = `socket-rate-limit-${Date.now()}`;
-    
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
     
@@ -31,7 +29,7 @@ test.describe('Rate Limiting', () => {
     // 1. User A joins a room.
     await pageA.goto('/');
     await pageA.click('text=[CREATE SECURE ROOM]');
-    await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
     await pageA.fill('input[placeholder="anonymous-user"]', 'UserA');
     await pageA.click('text=[INITIALIZE ROOM]');
 

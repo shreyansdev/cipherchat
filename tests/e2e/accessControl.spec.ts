@@ -25,7 +25,6 @@ test.describe('Access Control', () => {
   // Test 1
   // ───────────────────────────────────────────────────────────────────────────
   test('Wrong password shows error, does not join room', async ({ browser }) => {
-    const roomName = `wrong-pwd-test-${Date.now()}`;
     const correctPassword = 'correctPassword1!';
 
     const contextA = await browser.newContext();
@@ -34,7 +33,7 @@ test.describe('Access Control', () => {
     // ── Step 1: Create a room with correct password ──
     await pageA.goto('/');
     await pageA.click('text=[CREATE SECURE ROOM]');
-    await pageA.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await pageA.inputValue('input[placeholder="enter-room-name"]');
     await pageA.fill('input[placeholder="anonymous-user"]', 'UserA');
 
     await pageA.click('#protected', { force: true });
@@ -89,8 +88,6 @@ test.describe('Access Control', () => {
   // Test 2
   // ───────────────────────────────────────────────────────────────────────────
   test('Room at capacity rejects new joiners', async ({ browser }) => {
-    const roomName = `capacity-test-${Date.now()}`;
-    
     // Server must be run with TEST_MAX_USERS=2 for this to work
     const context1 = await browser.newContext();
     const page1 = await context1.newPage();
@@ -98,7 +95,7 @@ test.describe('Access Control', () => {
     // 1 & 2: Create room and join 2 browser contexts successfully
     await page1.goto('/');
     await page1.click('text=[CREATE SECURE ROOM]');
-    await page1.fill('input[placeholder="enter-room-name"]', roomName);
+    const roomName = await page1.inputValue('input[placeholder="enter-room-name"]');
     await page1.fill('input[placeholder="anonymous-user"]', 'User1');
     await page1.click('text=[INITIALIZE ROOM]');
 
