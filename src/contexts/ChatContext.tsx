@@ -90,7 +90,7 @@ export const chatReducer = (state: ChatState, action: ChatAction): ChatState => 
   }
 };
 
-const ChatContext = createContext<{
+export const ChatContext = createContext<{
   state: ChatState;
   dispatch: React.Dispatch<ChatAction>;
   encryptionKey: CryptoKey | null;

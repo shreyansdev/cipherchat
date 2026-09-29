@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isSafeUrl, cn } from '../../src/lib/utils';
+import { isSafeUrl, isSafeInternalMediaUrl, cn } from '../../src/lib/utils';
 
 describe('utils', () => {
   describe('cn (class names)', () => {
@@ -54,6 +54,19 @@ describe('utils', () => {
       expect(isSafeUrl(null as any)).toBe(false);
       expect(isSafeUrl(12345 as any)).toBe(false);
       expect(isSafeUrl({} as any)).toBe(false);
+    });
+  });
+
+  describe('isSafeInternalMediaUrl', () => {
+    it('allows valid internal file paths', () => {
+      expect(isSafeInternalMediaUrl('/api/files/file-123456abcdef')).toBe(true);
+      expect(isSafeInternalMediaUrl('http://localhost:3001/api/files/file-abcd1234ef')).toBe(true);
+    });
+
+    it('rejects external URLs (preventing IP leak / beaconing)', () => {
+      expect(isSafeInternalMediaUrl('https://attacker.com/image.png')).toBe(false);
+      expect(isSafeInternalMediaUrl('http://evil.com/api/files/file-123')).toBe(false);
+      expect(isSafeInternalMediaUrl('//evil.com/api/files/file-123')).toBe(false);
     });
   });
 });

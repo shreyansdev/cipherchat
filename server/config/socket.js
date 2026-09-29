@@ -187,7 +187,7 @@ export const setupSocketHandlers = async (io) => {
 
         if (!roomName || !userName || !userId ||
             typeof roomName !== 'string' || typeof userName !== 'string' || typeof userId !== 'string' ||
-            (password !== undefined && typeof password !== 'string')) {
+            (password !== undefined && (typeof password !== 'string' || password.length > 72))) {
           logger.warn({ data }, 'Join-room failed: Invalid room or user data');
           socket.emit('error', { message: 'Invalid room or user data' });
           return;
@@ -422,11 +422,20 @@ export const setupSocketHandlers = async (io) => {
           }
         }
 
-        // Check rate limit
-        if (!checkMessageRateLimit(socket.userData.userId)) {
+        // Check rate limit on both socket.id and userId to prevent header/ID cycling bypass
+        if (!checkMessageRateLimit(socket.userData.userId) || !checkMessageRateLimit(socket.id)) {
           logger.warn({ userId: socket.userData.userId, socketId: socket.id }, 'Send-message failed: Rate limit exceeded');
           socket.emit('rate_limited', { message: 'Rate limit exceeded. Please slow down.' });
           if (safeCallback) safeCallback({ success: false, error: 'Rate limit exceeded' });
+          return;
+        }
+
+        // Anti-replay: Reject messages with timestamps drifting more than 5 minutes
+        const now = Date.now();
+        const msgTimestamp = typeof message.timestamp === 'number' ? message.timestamp : now;
+        if (Math.abs(now - msgTimestamp) > 300000) {
+          logger.warn({ socketId: socket.id }, 'Send-message failed: Message timestamp expired');
+          if (safeCallback) safeCallback({ success: false, error: 'Message timestamp expired' });
           return;
         }
 
@@ -453,17 +462,24 @@ export const setupSocketHandlers = async (io) => {
           },
           ciphertext: message.ciphertext,
           iv: message.iv,
-          timestamp: typeof message.timestamp === 'number' ? message.timestamp : Date.now(),
+          timestamp: msgTimestamp,
           type: 'user',
           status: 'delivered',
         };
 
         // Forward optional file-sharing properties if present (Phase 2 feature check)
         if (message.mediaUrl && typeof message.mediaUrl === 'string') {
-          relayedMessage.mediaUrl = DOMPurify.sanitize(message.mediaUrl);
-          relayedMessage.mediaType = message.mediaType === 'image' ? 'image' : 'file';
-          relayedMessage.fileName = typeof message.fileName === 'string' ? DOMPurify.sanitize(message.fileName) : '';
-          relayedMessage.fileSize = Number(message.fileSize) || 0;
+          const rawUrl = DOMPurify.sanitize(message.mediaUrl).trim();
+          const isInternal = /^\/api\/files\/file-[a-zA-Z0-9_-]+$/.test(rawUrl) ||
+            /^(https?:\/\/[a-zA-Z0-9.:_-]+)?\/api\/files\/file-[a-zA-Z0-9_-]+$/.test(rawUrl);
+          if (isInternal) {
+            relayedMessage.mediaUrl = rawUrl;
+            relayedMessage.mediaType = message.mediaType === 'image' ? 'image' : 'file';
+            relayedMessage.fileName = typeof message.fileName === 'string' ? DOMPurify.sanitize(message.fileName).substring(0, 255) : '';
+            relayedMessage.fileSize = Number(message.fileSize) || 0;
+          } else {
+            logger.warn({ socketId: socket.id, mediaUrl: rawUrl }, 'Blocked external or untrusted mediaUrl in message payload');
+          }
         }
         
         // Store message in Redis
@@ -514,6 +530,8 @@ export const setupSocketHandlers = async (io) => {
       try {
         // Clean up socket rate limit entry to prevent memory leak
         joinRateLimits.delete(socket.id);
+        messageRateLimits.delete(socket.id);
+        typingRateLimits.delete(socket.id);
 
         // Remove session
         await removeSession(socket.id);
@@ -524,6 +542,7 @@ export const setupSocketHandlers = async (io) => {
           
           // Clean up rate limit data
           messageRateLimits.delete(userId);
+          typingRateLimits.delete(userId);
           
           // Remove user from Redis
           await removeUserFromRoom(roomName, userId);

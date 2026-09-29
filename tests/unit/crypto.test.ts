@@ -1,6 +1,6 @@
 // IMPLEMENTS: spec §4
 import { describe, it, expect } from 'vitest';
-import { deriveKey, encryptMessage, decryptMessage } from '../../src/lib/crypto';
+import { deriveKey, encryptMessage, decryptMessage, encryptFileBuffer, decryptFileBuffer } from '../../src/lib/crypto';
 
 describe('Cryptography Module (AES-256-GCM)', () => {
   const password = 'test-password-123';
@@ -143,6 +143,39 @@ describe('Cryptography Module (AES-256-GCM)', () => {
       const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
       expect(payload.ciphertext).toMatch(base64Regex);
       expect(payload.iv).toMatch(base64Regex);
+    });
+  });
+
+  describe('File Encryption and Decryption (E2EE Client-Side)', () => {
+    it('should encrypt and decrypt file buffer cleanly', async () => {
+      const key = await deriveKey(password, roomSlug);
+      const originalText = 'Hello secret document content!';
+      const encoder = new TextEncoder();
+      const fileData = encoder.encode(originalText).buffer;
+
+      const encrypted = await encryptFileBuffer(fileData, key);
+      expect(encrypted.length).toBeGreaterThan(fileData.byteLength);
+
+      const decrypted = await decryptFileBuffer(encrypted, key);
+      const decoder = new TextDecoder();
+      expect(decoder.decode(decrypted)).toBe(originalText);
+    });
+
+    it('should fail decryption if tampered or wrong key', async () => {
+      const key1 = await deriveKey(password, roomSlug);
+      const key2 = await deriveKey('different-password', roomSlug);
+      const originalText = 'Secret data';
+      const fileData = new TextEncoder().encode(originalText).buffer;
+
+      const encrypted = await encryptFileBuffer(fileData, key1);
+
+      // Wrong key
+      await expect(decryptFileBuffer(encrypted, key2)).rejects.toThrow();
+
+      // Tampered data
+      const tampered = new Uint8Array(encrypted);
+      tampered[15] ^= 0xff;
+      await expect(decryptFileBuffer(tampered, key1)).rejects.toThrow();
     });
   });
 });

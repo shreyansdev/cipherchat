@@ -59,6 +59,7 @@ export const deleteRoomFiles = async (roomName) => {
   try {
     const slug = (roomName || '').trim().toLowerCase();
     const filesKey = `room:${slug}:files`;
+    const storageKey = `room:${slug}:storage_bytes`;
     if (typeof redisClient.sMembers === 'function') {
       const filenames = await redisClient.sMembers(filesKey);
       if (Array.isArray(filenames)) {
@@ -68,6 +69,7 @@ export const deleteRoomFiles = async (roomName) => {
       }
       if (typeof redisClient.del === 'function') {
         await redisClient.del(filesKey);
+        await redisClient.del(storageKey);
       }
     }
     return true;

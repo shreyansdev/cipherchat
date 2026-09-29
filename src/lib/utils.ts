@@ -35,3 +35,42 @@ export const isSafeUrl = (url?: string): boolean => {
     return false;
   }
 };
+
+/**
+ * Validates that a media URL strictly points to the application's internal files endpoint
+ * (/api/files/file-[id]) to prevent external tracking/IP leak attacks.
+ */
+export const isSafeInternalMediaUrl = (url?: string): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed || !isSafeUrl(trimmed)) return false;
+
+  // Relative path matching /api/files/file-...
+  if (/^\/api\/files\/file-[a-zA-Z0-9_-]+$/.test(trimmed.split('?')[0])) {
+    return true;
+  }
+
+  // Absolute URL: Origin MUST match window.location.origin or VITE_API_URL
+  try {
+    const parsed = new URL(trimmed);
+    const pathname = parsed.pathname.split('?')[0];
+    if (!/^\/api\/files\/file-[a-zA-Z0-9_-]+$/.test(pathname)) {
+      return false;
+    }
+
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const apiUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL;
+    const allowedOrigins = [currentOrigin, 'http://localhost:3001', 'http://127.0.0.1:3001'];
+    if (apiUrl) {
+      try {
+        allowedOrigins.push(new URL(apiUrl).origin);
+      } catch {
+        // ignore
+      }
+    }
+
+    return allowedOrigins.filter(Boolean).includes(parsed.origin);
+  } catch {
+    return false;
+  }
+};

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Message, User } from '../../types';
-import { Terminal, Check, CheckCheck, Lock, FileText, Download } from 'lucide-react';
+import { Terminal, Check, CheckCheck, Lock, FileText, Download, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import { isSafeUrl } from '../../lib/utils';
+import { isSafeInternalMediaUrl } from '../../lib/utils';
+import { ChatContext } from '../../contexts/ChatContext';
+import { decryptFileBuffer } from '../../lib/crypto';
 
 interface MessageBubbleProps {
   message: Message;
@@ -13,6 +15,106 @@ interface MessageBubbleProps {
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) => {
   const isSystem = message.type === 'system';
   const isCurrentUser = message.user.id === currentUser?.id;
+  const chat = React.useContext(ChatContext);
+  const encryptionKey = chat?.encryptionKey || null;
+  const roomPassword = chat?.roomPassword || '';
+
+  const [decryptedMediaUrl, setDecryptedMediaUrl] = useState<string | null>(null);
+  const [isDecryptingMedia, setIsDecryptingMedia] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | null = null;
+
+    if (message.mediaUrl && message.mediaType === 'image' && isSafeInternalMediaUrl(message.mediaUrl)) {
+      const loadAndDecrypt = async () => {
+        try {
+          setIsDecryptingMedia(true);
+          const headers: Record<string, string> = {};
+          if (roomPassword) {
+            headers['x-room-password'] = roomPassword;
+          }
+
+          const res = await fetch(message.mediaUrl!, { headers });
+          if (!res.ok) throw new Error('Failed to fetch image');
+          const buffer = await res.arrayBuffer();
+
+          let decryptedBuffer: ArrayBuffer;
+          if (encryptionKey) {
+            try {
+              decryptedBuffer = await decryptFileBuffer(buffer, encryptionKey);
+            } catch {
+              decryptedBuffer = buffer; // Fallback for unencrypted legacy media
+            }
+          } else {
+            decryptedBuffer = buffer;
+          }
+
+          if (active) {
+            objectUrl = URL.createObjectURL(new Blob([decryptedBuffer]));
+            setDecryptedMediaUrl(objectUrl);
+          }
+        } catch (err) {
+          console.error('Failed to decrypt image:', err);
+        } finally {
+          if (active) setIsDecryptingMedia(false);
+        }
+      };
+
+      loadAndDecrypt();
+    }
+
+    return () => {
+      active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [message.mediaUrl, message.mediaType, encryptionKey, roomPassword]);
+
+  const handleDownloadFile = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!message.mediaUrl || !isSafeInternalMediaUrl(message.mediaUrl) || isDownloading) return;
+
+    try {
+      setIsDownloading(true);
+      const headers: Record<string, string> = {};
+      if (roomPassword) {
+        headers['x-room-password'] = roomPassword;
+      }
+
+      const res = await fetch(message.mediaUrl, { headers });
+      if (!res.ok) throw new Error('Failed to fetch file');
+      const buffer = await res.arrayBuffer();
+
+      let decryptedBuffer: ArrayBuffer;
+      if (encryptionKey) {
+        try {
+          decryptedBuffer = await decryptFileBuffer(buffer, encryptionKey);
+        } catch {
+          decryptedBuffer = buffer;
+        }
+      } else {
+        decryptedBuffer = buffer;
+      }
+
+      const blob = new Blob([decryptedBuffer]);
+      const blobUrl = URL.createObjectURL(blob);
+      const tempLink = document.createElement('a');
+      tempLink.href = blobUrl;
+      tempLink.download = message.fileName || 'file';
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('File download error:', err);
+      alert('Failed to download file.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -77,29 +179,53 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
           }`}
         >
           {/* Media content */}
-          {message.mediaUrl && message.mediaType === 'image' && isSafeUrl(message.mediaUrl) && (
+          {message.mediaUrl && message.mediaType === 'image' && isSafeInternalMediaUrl(message.mediaUrl) && (
             <div className="mb-2.5 overflow-hidden rounded-xl border border-cyan-500/30">
-              <img
-                src={message.mediaUrl}
-                alt={message.fileName || 'Shared image'}
-                className="max-w-full rounded-xl cursor-pointer hover:scale-105 transition-transform duration-300"
-                style={{ maxHeight: '280px' }}
-                onClick={() => window.open(message.mediaUrl, '_blank', 'noopener,noreferrer')}
-              />
+              {decryptedMediaUrl ? (
+                <img
+                  src={decryptedMediaUrl}
+                  alt={message.fileName || 'Shared image'}
+                  className="max-w-full rounded-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+                  style={{ maxHeight: '280px' }}
+                  onClick={() => window.open(decryptedMediaUrl, '_blank', 'noopener,noreferrer')}
+                />
+              ) : isDecryptingMedia ? (
+                <div className="p-4 text-xs font-mono text-cyan-400 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-cyber-cyan" />
+                  <span>[DECRYPTING MEDIA...]</span>
+                </div>
+              ) : (
+                <div className="p-3 text-xs font-mono text-destructive flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>[ENCRYPTED MEDIA UNAVAILABLE]</span>
+                </div>
+              )}
             </div>
           )}
-          {message.mediaUrl && message.mediaType === 'file' && isSafeUrl(message.mediaUrl) && (
+          {message.mediaUrl && message.mediaType === 'file' && isSafeInternalMediaUrl(message.mediaUrl) && (
             <div className="mb-2.5 flex items-center gap-2.5 p-3 bg-[#080b10]/70 rounded-xl border border-cyan-500/30 group hover:border-cyan-400 transition-colors">
               <FileText className="h-4 w-4 text-cyber-cyan flex-shrink-0" />
-              <a
-                href={message.mediaUrl}
-                download={message.fileName}
-                rel="noopener noreferrer"
-                className="text-xs text-cyber-cyan hover:underline flex-1 truncate font-semibold"
+              <button
+                type="button"
+                onClick={handleDownloadFile}
+                disabled={isDownloading}
+                className="text-xs text-cyber-cyan hover:underline flex-1 truncate font-semibold text-left"
               >
                 {message.fileName} ({message.fileSize ? (message.fileSize / 1024).toFixed(1) : '?'} KB)
-              </a>
-              <Download className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-colors" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadFile}
+                disabled={isDownloading}
+                className="p-1 hover:text-white transition-colors"
+                title="Download Decrypted File"
+              >
+                {isDownloading ? (
+                  <Loader2 className="h-3.5 w-3.5 text-cyber-cyan animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-colors" />
+                )}
+              </button>
             </div>
           )}
           

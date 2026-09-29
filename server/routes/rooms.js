@@ -58,6 +58,10 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters long' });
     }
 
+    if (password && password.length > 72) {
+      return res.status(400).json({ error: 'Password cannot exceed 72 characters' });
+    }
+
     const result = await createRoom(roomName, password, ttl);
     logger.info({ roomName: result.roomName }, 'Room created via API');
     res.json({ success: true, roomName: result.roomName });
@@ -115,6 +119,11 @@ router.post('/verify', passwordVerifyLimiter, async (req, res) => {
     if (!roomName || !password || typeof roomName !== 'string' || typeof password !== 'string') {
       logger.warn('Verify password failed: Missing or invalid roomName or password');
       return res.status(400).json({ error: 'Room name and password are required' });
+    }
+
+    if (password.length > 72) {
+      logger.warn('Verify password failed: Password exceeds 72 characters');
+      return res.status(400).json({ error: 'Password cannot exceed 72 characters' });
     }
 
     const sanitizedRoomName = roomName.trim().toLowerCase();

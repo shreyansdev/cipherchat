@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useChat } from '../contexts/ChatContext';
 import { User, Message, TypingUser, JoinRoomPayload, TypingPayload, FileUploadResponse, SendMessagePayload } from '../types';
-import { encryptMessage, decryptMessage } from '../lib/crypto';
+import { encryptMessage, decryptMessage, encryptFileBuffer } from '../lib/crypto';
 import DOMPurify from 'dompurify';
 import { ERROR_CODES, ERROR_MESSAGES } from '../lib/errors';
 
@@ -77,7 +77,7 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      const activePassword = roomPassword || window.history.state?.usr?.password || '';
+      const activePassword = roomPassword || '';
 
       const payload: JoinRoomPayload = {
         roomName,
@@ -264,13 +264,18 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
     let fileName = '';
     let fileSize = 0;
 
-    // If there's a file, upload it first
+    // If there's a file, encrypt client-side and upload
     if (file) {
       try {
-        const formData = new FormData();
-        formData.append('file', file);
+        // Encrypt file client-side using room AES-256-GCM key (E2EE)
+        const fileBuffer = await file.arrayBuffer();
+        const encryptedBytes = await encryptFileBuffer(fileBuffer, encryptionKey);
+        const encryptedBlob = new Blob([encryptedBytes], { type: 'application/octet-stream' });
 
-        const activePassword = roomPassword || window.history.state?.usr?.password || '';
+        const formData = new FormData();
+        formData.append('file', encryptedBlob, file.name);
+
+        const activePassword = roomPassword || '';
         const headers: Record<string, string> = {
           'x-room-name': roomName,
         };
@@ -295,7 +300,8 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
 
         const data: FileUploadResponse = await response.json();
         if (data?.url) {
-          mediaUrl = `${API_URL}${data.url}`;
+          // Store relative URL path to prevent external domain injection
+          mediaUrl = data.url.startsWith('http') ? data.url : `${API_URL}${data.url}`;
           mediaType = data.mediaType;
         }
         fileName = file.name;

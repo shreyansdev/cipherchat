@@ -125,3 +125,49 @@ export async function decryptMessage(
     throw new Error('Decryption failed: Incorrect key or corrupted data');
   }
 }
+
+/**
+ * Encrypts an ArrayBuffer of file data using AES-256-GCM.
+ * Prepends the 12-byte IV directly to the ciphertext for clean, self-contained storage.
+ */
+export async function encryptFileBuffer(
+  fileBuffer: ArrayBuffer,
+  key: CryptoKey
+): Promise<Uint8Array> {
+  const cryptoObj = globalThis.crypto;
+  const iv = cryptoObj.getRandomValues(new Uint8Array(12));
+  const encryptedBuffer = await cryptoObj.subtle.encrypt(
+    { name: ALGORITHM, iv },
+    key,
+    fileBuffer
+  );
+  const encryptedBytes = new Uint8Array(encryptedBuffer);
+  const result = new Uint8Array(iv.length + encryptedBytes.length);
+  result.set(iv, 0);
+  result.set(encryptedBytes, iv.length);
+  return result;
+}
+
+/**
+ * Decrypts an encrypted file buffer containing [12-byte IV][ciphertext] using AES-256-GCM.
+ */
+export async function decryptFileBuffer(
+  encryptedData: ArrayBuffer | Uint8Array,
+  key: CryptoKey
+): Promise<ArrayBuffer> {
+  try {
+    const u8 = encryptedData instanceof Uint8Array ? encryptedData : new Uint8Array(encryptedData);
+    if (u8.length < 28) { // 12-byte IV + minimum 16-byte GCM auth tag
+      throw new Error('Encrypted file data is too short');
+    }
+    const iv = u8.subarray(0, 12);
+    const ciphertext = u8.subarray(12);
+    return await globalThis.crypto.subtle.decrypt(
+      { name: ALGORITHM, iv },
+      key,
+      ciphertext
+    );
+  } catch {
+    throw new Error('File decryption failed: Incorrect key or corrupted data');
+  }
+}

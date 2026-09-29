@@ -4,18 +4,21 @@ import mime from 'mime-types';
 import crypto from 'crypto';
 import { saveFile, storeFileMetadata, getFileMetadata, getFilePath, deleteFile } from '../services/fileService.js';
 import { getRoomData, verifyRoomPassword } from '../services/roomService.js';
+import redisClient from '../config/redis.js';
 import logger from '../lib/logger.js';
 
 const router = express.Router();
+
+const MAX_ROOM_STORAGE_BYTES = 50 * 1024 * 1024; // 50MB per room cumulative quota
 
 // Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
   },
   fileFilter: (req, file, cb) => {
-    // Allow images and common document types
+    // Allow images, documents, and client-encrypted octet-stream blobs
     const allowedTypes = [
       'image/jpeg',
       'image/png',
@@ -25,6 +28,7 @@ const upload = multer({
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/plain',
+      'application/octet-stream',
     ];
     
     if (allowedTypes.includes(file.mimetype)) {
@@ -57,6 +61,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     if (!roomData) {
       logger.warn({ roomName: sanitizedRoomName }, 'File upload rejected: Room not found or expired');
       return res.status(404).json({ error: 'Room not found or expired' });
+    }
+
+    // Check cumulative room storage quota (max 50MB per room)
+    const currentRoomStorage = await redisClient.get(`room:${sanitizedRoomName}:storage_bytes`);
+    if ((parseInt(currentRoomStorage || '0', 10) + req.file.size) > MAX_ROOM_STORAGE_BYTES) {
+      logger.warn({ roomName: sanitizedRoomName }, 'File upload rejected: Room storage quota exceeded');
+      return res.status(413).json({ error: 'Room storage quota exceeded (max 50MB per room)' });
     }
 
     // If room is password protected, verify room password header
@@ -105,6 +116,18 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       return res.status(500).json({ error: 'Failed to save file metadata' });
     }
 
+    // Update cumulative room storage bytes in Redis
+    try {
+      const storageKey = `room:${sanitizedRoomName}:storage_bytes`;
+      await redisClient.incrBy(storageKey, req.file.size);
+      const ttl = await redisClient.ttl(`room:${sanitizedRoomName}:meta`);
+      if (ttl > 0) {
+        await redisClient.expire(storageKey, ttl);
+      }
+    } catch (storageErr) {
+      logger.warn({ storageErr, roomName: sanitizedRoomName }, 'Error updating room storage counter');
+    }
+
     logger.info({ fileId, roomName: sanitizedRoomName, mediaType, size: req.file.size }, 'File uploaded successfully');
 
     res.json({
@@ -146,9 +169,9 @@ router.get('/:fileId', async (req, res) => {
         return res.status(404).json({ error: 'File not found or expired' });
       }
 
-      // If room is password protected, require password via header or query param
+      // If room is password protected, require password via header only (prevent query param leakage)
       if (roomData.passwordHash && roomData.passwordHash !== '') {
-        const roomPassword = req.headers['x-room-password'] || req.query.password;
+        const roomPassword = req.headers['x-room-password'];
         if (!roomPassword || typeof roomPassword !== 'string') {
           logger.warn({ fileId, roomName: metadata.roomName }, 'File serve rejected: Password required');
           return res.status(401).json({ error: 'Password required' });
