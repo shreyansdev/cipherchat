@@ -6,7 +6,9 @@
 [![React](https://img.shields.io/badge/React-18.2-61DAFB.svg?style=flat-square&logo=react)](https://react.dev/)
 [![Encryption](https://img.shields.io/badge/E2EE-AES--256--GCM-blueviolet.svg?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 [![Storage](https://img.shields.io/badge/Data_Store-Redis_7_(RAM--Only)-DC382D.svg?style=flat-square&logo=redis)](https://redis.io/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Live_Demo-F38020.svg?style=flat-square&logo=cloudflare)](https://cipherchat-av9.pages.dev)
 
+> 🌐 **Live Application:** [https://cipherchat-av9.pages.dev](https://cipherchat-av9.pages.dev)  
 > **Audience:** Privacy-conscious general consumers & secure teams.  
 > **Scale Target:** 10,000+ concurrent users.  
 > **Core Promise:** Ephemeral, end-to-end encrypted chat with zero metadata leakage, zero persistent user accounts, and zero server-side plaintext.
@@ -320,7 +322,7 @@ npm run build
   npm run start:cluster
   ```
 - **TLS Termination:** Deploy behind Nginx or Caddy with WebSockets proxying and HTTP Strict Transport Security (HSTS) enabled.
-- **Frontend Hosting:** Build artifacts (`npm run build`) can be deployed to any static edge provider (Vercel, Netlify, Cloudflare Pages, AWS S3/CloudFront).
+- **Frontend Hosting (Cloudflare Pages):** Deployed live at [https://cipherchat-av9.pages.dev](https://cipherchat-av9.pages.dev) via Cloudflare Pages (`npm run pages:deploy` / `wrangler pages deploy dist`). Features SPA rewrite (`_redirects`), security headers (`_headers`), and immutable asset caching.
 
 ---
 
