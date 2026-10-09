@@ -17,7 +17,7 @@ import { ERROR_MESSAGES, ERROR_CODES } from '../lib/errors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { checkRoomProtection, verifyRoomPassword } from '../lib/api';
 
-const RANDOM_ALIASES = ['Ghost_Protocol', 'Cipher_007', 'Neon_Specter', 'Quantum_Rebel', 'Void_Runner', 'Shadow_Agent'];
+const RANDOM_ALIASES = ['Ghost_Protocol', 'Cipher_007', 'Neon_Specter', 'Quantum_Rebel', 'Void_Runner', 'Shadow_Agent', 'Cipherpunk_42'];
 
 const ChatPage: React.FC = () => {
   const { roomName } = useParams<{ roomName: string }>();
@@ -136,17 +136,17 @@ const ChatPage: React.FC = () => {
 
   if (needsDisplayName) {
     return (
-      <div className="min-h-screen bg-[#080b10] flex items-center justify-center p-4 relative overflow-hidden font-mono">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-gradient-to-tr from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-4 relative overflow-hidden font-mono">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[350px] bg-gradient-to-tr from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none opacity-60" aria-hidden="true" />
         
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-[#0d1420]/85 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-6 sm:p-8 relative z-10 shadow-[0_0_40px_rgba(0,240,255,0.12)]"
+          className="w-full max-w-md bg-[#0a101a]/90 backdrop-blur-2xl border border-cyan-500/35 rounded-2xl p-6 sm:p-8 relative z-10 shadow-[0_0_50px_rgba(0,240,255,0.14)]"
         >
           <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(0,255,101,0.2)]">
-              <Shield className="h-8 w-8 text-cyber-green animate-pulse" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto mb-4 shadow-[0_0_25px_rgba(0,255,101,0.25)]">
+              <Shield className="h-8 w-8 text-cyber-green animate-pulse" aria-hidden="true" />
             </div>
             <h2 className="text-2xl font-bold text-white uppercase tracking-wider">[JOIN CHANNEL]</h2>
             <div className="inline-block mt-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyber-cyan text-xs font-semibold">
@@ -157,30 +157,34 @@ const ChatPage: React.FC = () => {
           <form onSubmit={handleDirectJoin} className="space-y-5">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="displayName" className="text-xs text-cyber-green uppercase tracking-widest">
+                <Label htmlFor="direct-displayName" className="text-xs text-cyber-green uppercase tracking-widest cursor-pointer font-bold">
                   &gt; Anonymous Alias
                 </Label>
                 <button
                   type="button"
                   onClick={handleRandomAlias}
-                  className="text-[11px] text-cyber-cyan/80 hover:text-white flex items-center gap-1 font-mono transition-colors"
+                  className="text-[11px] text-cyber-cyan/90 hover:text-white flex items-center gap-1 font-mono transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded px-1"
+                  aria-label="Generate random alias"
                 >
-                  <Sparkles className="h-3 w-3" />
-                  [Randomize]
+                  <Sparkles className="h-3 w-3" aria-hidden="true" />
+                  <span>[Randomize]</span>
                 </button>
               </div>
               <Input
-                id="displayName"
+                id="direct-displayName"
+                name="displayName"
                 value={displayNameInput}
                 onChange={(e) => setDisplayNameInput(e.target.value)}
                 placeholder="anonymous-user"
+                spellCheck={false}
+                autoComplete="off"
                 autoFocus
-                className="bg-[#080b10]/70 border-cyan-500/30 focus:border-cyan-400 text-white rounded-xl"
+                className="bg-[#040810]/80 border-cyan-500/30 focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 text-white rounded-xl"
               />
             </div>
 
             {error && (
-              <div className="text-destructive text-xs p-3 rounded-xl bg-destructive/10 border border-destructive/30">
+              <div className="text-destructive text-xs p-3 rounded-xl bg-destructive/10 border border-destructive/30" role="alert">
                 [ERROR] {error === ERROR_CODES.ROOM_NOT_FOUND ? ERROR_MESSAGES.ROOM_NOT_FOUND : error}
               </div>
             )}
@@ -188,16 +192,16 @@ const ChatPage: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading || !displayNameInput.trim()}
-              className="w-full h-12 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.3)] font-bold transition-all"
+              className="w-full h-12 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.35)] font-bold transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
             >
-              {isLoading ? '[CONNECTING...]' : '[CONNECT NOW]'}
+              {isLoading ? '[CONNECTING…]' : '[CONNECT NOW]'}
             </Button>
             
             <Button
               type="button"
               variant="secondary"
               onClick={() => navigate('/')}
-              className="w-full rounded-xl bg-[#080b10]/70 border border-cyan-500/20 text-slate-300 hover:bg-[#080b10]"
+              className="w-full rounded-xl bg-[#080d16]/80 border border-cyan-500/20 text-slate-300 hover:bg-[#080d16] focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
             >
               [CANCEL]
             </Button>
@@ -217,10 +221,10 @@ const ChatPage: React.FC = () => {
 
   if (!encryptionKey && !needsDisplayName) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#080b10] text-cyber-cyan font-mono">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#0d1420]/80 border border-cyan-500/30 shadow-[0_0_30px_rgba(0,240,255,0.15)] animate-pulse">
-          <RefreshCw className="h-5 w-5 animate-spin text-cyber-green" />
-          <span>[INITIALIZING SECURE CHANNEL & DERIVING KEYS...]</span>
+      <div className="flex h-screen items-center justify-center bg-transparent text-cyber-cyan font-mono">
+        <div className="flex items-center gap-3 p-5 rounded-2xl bg-[#0a101a]/90 backdrop-blur-xl border border-cyan-500/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] animate-pulse">
+          <RefreshCw className="h-5 w-5 animate-spin text-cyber-green" aria-hidden="true" />
+          <span className="font-bold tracking-wide">[INITIALIZING SECURE CHANNEL &amp; DERIVING KEYS…]</span>
         </div>
       </div>
     );
@@ -235,16 +239,16 @@ const ChatPage: React.FC = () => {
   // Full-page error for room not found
   if (state.error === ERROR_CODES.ROOM_NOT_FOUND) {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-[#080b10] text-slate-100 font-mono p-6 text-center">
+      <div className="flex flex-col h-screen items-center justify-center bg-transparent text-slate-100 font-mono p-6 text-center">
         <div className="w-20 h-20 rounded-2xl bg-destructive/10 border border-destructive/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(255,51,102,0.2)]">
-          <AlertCircle className="h-10 w-10 text-destructive animate-pulse" />
+          <AlertCircle className="h-10 w-10 text-destructive animate-pulse" aria-hidden="true" />
         </div>
         <h2 className="text-2xl font-bold mb-2 text-white">[CHANNEL NOT FOUND]</h2>
         <p className="text-muted-foreground mb-8 max-w-sm text-sm">
           {ERROR_MESSAGES.ROOM_NOT_FOUND}
         </p>
-        <Button onClick={handleLeave} variant="secondary" className="font-mono rounded-xl bg-card border border-cyan-500/30 text-cyber-cyan hover:border-cyan-400">
-          <RefreshCw className="mr-2 h-4 w-4" />
+        <Button onClick={handleLeave} variant="secondary" className="font-mono rounded-xl bg-card border border-cyan-500/30 text-cyber-cyan hover:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none">
+          <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
           [CREATE NEW ROOM]
         </Button>
       </div>
@@ -254,16 +258,16 @@ const ChatPage: React.FC = () => {
   // Full-page error for expired room
   if (state.error === 'ROOM_EXPIRED') {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-[#080b10] text-slate-100 font-mono p-6 text-center">
+      <div className="flex flex-col h-screen items-center justify-center bg-transparent text-slate-100 font-mono p-6 text-center">
         <div className="w-20 h-20 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
-          <Terminal className="h-10 w-10 text-cyber-purple animate-pulse" />
+          <Terminal className="h-10 w-10 text-cyber-purple animate-pulse" aria-hidden="true" />
         </div>
         <h2 className="text-2xl font-bold mb-2 text-white">[CHANNEL EXPIRED]</h2>
         <p className="text-muted-foreground mb-8 max-w-sm text-sm">
           This room has reached its configured TTL and expired. All cryptographic data and message history has been wiped.
         </p>
-        <Button onClick={handleLeave} variant="secondary" className="font-mono rounded-xl bg-card border border-cyan-500/30 text-cyber-cyan hover:border-cyan-400">
-          <RefreshCw className="mr-2 h-4 w-4" />
+        <Button onClick={handleLeave} variant="secondary" className="font-mono rounded-xl bg-card border border-cyan-500/30 text-cyber-cyan hover:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none">
+          <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
           [START NEW SESSION]
         </Button>
       </div>
@@ -271,7 +275,7 @@ const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#080b10] text-slate-100 relative overflow-hidden font-sans">
+    <div className="flex h-screen bg-transparent text-slate-100 relative overflow-hidden font-sans">
       {/* Inline Banner for Room Full */}
       <AnimatePresence>
         {state.error === ERROR_CODES.ROOM_FULL && (
@@ -280,13 +284,15 @@ const ChatPage: React.FC = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="bg-destructive/20 border-b border-destructive text-destructive px-4 py-2.5 text-center font-mono text-xs z-50 absolute top-0 left-0 right-0 backdrop-blur-md"
+            role="alert"
           >
             <div className="flex items-center justify-center gap-2">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
               <span>[ACCESS DENIED] {ERROR_MESSAGES.ROOM_FULL}</span>
               <button 
+                type="button"
                 onClick={handleLeave}
-                className="ml-4 underline hover:text-white transition-colors font-bold"
+                className="ml-4 underline hover:text-white transition-colors font-bold focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none rounded px-1"
               >
                 [EXIT]
               </button>
@@ -307,16 +313,16 @@ const ChatPage: React.FC = () => {
             <div className={`p-4 rounded-xl border shadow-2xl flex items-center gap-3 font-mono text-sm backdrop-blur-xl ${
               state.connectionStatus === 'failed' || state.error === 'CONNECTION_LOST'
                 ? 'bg-destructive/95 border-destructive text-white' 
-                : 'bg-[#0d1420]/95 border-cyan-500/40 text-cyan-300'
+                : 'bg-[#080d16]/95 border-cyan-500/40 text-cyan-300'
             }`}>
               {state.connectionStatus === 'failed' || state.error === 'CONNECTION_LOST' ? (
-                <WifiOff className="h-5 w-5 flex-shrink-0" />
+                <WifiOff className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
               ) : (
-                <RefreshCw className="h-5 w-5 animate-spin flex-shrink-0 text-cyber-cyan" />
+                <RefreshCw className="h-5 w-5 animate-spin flex-shrink-0 text-cyber-cyan" aria-hidden="true" />
               )}
               <div className="flex-1 text-xs">
                 {state.error === 'SERVER_RESTARTING'
-                  ? 'Server is restarting. Reconnecting...'
+                  ? 'Server is restarting. Reconnecting…'
                   : state.error === 'CONNECTION_LOST'
                   ? 'Connection lost. Please refresh the page.'
                   : state.connectionStatus === 'failed' 
@@ -325,8 +331,9 @@ const ChatPage: React.FC = () => {
               </div>
               {(state.connectionStatus === 'failed' || state.error === 'CONNECTION_LOST') && (
                 <button 
+                  type="button"
                   onClick={() => window.location.reload()}
-                  className="px-2.5 py-1 bg-white/20 rounded-lg hover:bg-white/30 transition-colors text-xs font-bold"
+                  className="px-2.5 py-1 bg-white/20 rounded-lg hover:bg-white/30 transition-colors text-xs font-bold focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 >
                   RETRY
                 </button>
@@ -337,12 +344,13 @@ const ChatPage: React.FC = () => {
       </AnimatePresence>
 
       {/* Main Chat Stream Container */}
-      <main className="flex-1 flex flex-col transition-all duration-300 bg-[#080b10] min-w-0 h-full">
+      <main className="flex-1 flex flex-col transition-all duration-300 bg-[#03060c]/60 backdrop-blur-md min-w-0 h-full">
         <Header 
           roomName={roomName || 'default-room'} 
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           isSidebarOpen={isSidebarOpen}
           onLeaveRoom={() => setShowLeaveModal(true)}
+          peerCount={state.users.length}
         />
         <MessageList messages={state.messages} currentUser={currentUser} typingUsers={state.typingUsers} />
         <MessageInput onSendMessage={sendMessage} onTyping={sendTypingIndicator} />

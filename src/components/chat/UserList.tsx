@@ -36,7 +36,7 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
             />
           )}
 
@@ -46,16 +46,16 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed inset-y-0 right-0 z-50 w-72 sm:w-80 lg:static lg:z-20 border-l border-cyan-500/20 bg-[#0c121d]/95 backdrop-blur-xl flex flex-col h-full shadow-[-10px_0_30px_rgba(0,0,0,0.5)] lg:shadow-none flex-shrink-0"
+            className="fixed inset-y-0 right-0 z-50 w-72 sm:w-80 lg:static lg:z-20 border-l border-cyan-500/20 bg-[#070b13]/95 backdrop-blur-2xl flex flex-col h-full shadow-[-10px_0_30px_rgba(0,0,0,0.6)] lg:shadow-none flex-shrink-0 font-mono"
           >
             {/* Header with Title + Active Count + Close Button */}
-            <div className="p-4 border-b border-cyan-500/20 bg-[#080b10]/50 flex items-center justify-between">
+            <div className="p-4 border-b border-cyan-500/20 bg-[#040810]/70 flex items-center justify-between">
               <div className="flex items-center gap-2 text-white font-mono">
-                <Users className="h-4 w-4 text-cyber-cyan" />
+                <Users className="h-4 w-4 text-cyber-cyan" aria-hidden="true" />
                 <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">
                   Active Peers
                 </span>
-                <span className="text-xs text-cyber-green bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-bold">
+                <span className="text-xs text-cyber-green bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-bold tabular-nums">
                   {users.length}
                 </span>
               </div>
@@ -64,10 +64,10 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  className="h-8 w-8 text-slate-400 hover:text-white hover:bg-cyan-500/10 rounded-lg lg:hidden"
+                  className="h-8 w-8 text-slate-400 hover:text-white hover:bg-cyan-500/10 rounded-lg lg:hidden focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
                   aria-label="Close Sidebar"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </Button>
               )}
             </div>
@@ -82,19 +82,19 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
-                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[#080b10]/60 border border-cyan-500/15 hover:border-cyan-500/40 hover:bg-[#080b10]/90 transition-all group"
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[#080d16]/70 border border-cyan-500/15 hover:border-cyan-500/40 hover:bg-[#080d16] transition-all group"
                   >
                     {/* User Avatar Circle */}
                     <div className="relative flex-shrink-0">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${getUserColor(user.id)} p-[1px] flex items-center justify-center`}>
-                        <div className="w-full h-full rounded-[7px] bg-[#0c121d] flex items-center justify-center text-xs font-mono font-bold text-white uppercase">
+                        <div className="w-full h-full rounded-[7px] bg-[#070b13] flex items-center justify-center text-xs font-mono font-bold text-white uppercase">
                           {user.name.slice(0, 2)}
                         </div>
                       </div>
                       {/* Status Radar Pulse */}
                       <div className="absolute -bottom-0.5 -right-0.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c121d]"></div>
-                        <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-75"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#070b13]" aria-hidden="true" />
+                        <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-75" aria-hidden="true" />
                       </div>
                     </div>
 
@@ -103,13 +103,13 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
                       <div className="font-mono text-xs sm:text-sm font-semibold text-slate-200 truncate group-hover:text-cyber-cyan transition-colors">
                         {user.name}
                       </div>
-                      <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                      <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
                         <span className="text-emerald-400 font-bold">●</span> VERIFIED PEER
                       </div>
                     </div>
 
                     {/* Anonymous Tag */}
-                    <div className="text-[9px] text-cyber-cyan/70 font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
+                    <div className="text-[9px] text-cyber-cyan/80 font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
                       ANON
                     </div>
                   </motion.div>
@@ -118,18 +118,18 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
             </div>
 
             {/* Footer Info & Disconnect Button */}
-            <div className="p-4 border-t border-cyan-500/20 bg-[#080b10]/60 space-y-3">
-              <div className="text-[10px] font-mono text-muted-foreground space-y-1.5">
+            <div className="p-4 border-t border-cyan-500/20 bg-[#040810]/80 space-y-3.5">
+              <div className="text-[10px] font-mono text-slate-400 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-slate-400">
-                  <Circle className="h-1.5 w-1.5 text-cyber-green fill-cyber-green" />
+                  <Circle className="h-1.5 w-1.5 text-cyber-green fill-cyber-green" aria-hidden="true" />
                   <span>Zero Metadata Storage</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-400">
-                  <Circle className="h-1.5 w-1.5 text-cyber-cyan fill-cyber-cyan" />
+                  <Circle className="h-1.5 w-1.5 text-cyber-cyan fill-cyber-cyan" aria-hidden="true" />
                   <span>Auto-Purge on Room Expiry</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-400">
-                  <ShieldCheck className="h-2.5 w-2.5 text-cyber-purple" />
+                  <ShieldCheck className="h-2.5 w-2.5 text-cyber-purple" aria-hidden="true" />
                   <span>Web Crypto AES-256 E2EE</span>
                 </div>
               </div>
@@ -139,11 +139,11 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
                   variant="destructive"
                   size="sm"
                   onClick={onLeaveRoom}
-                  className="w-full text-xs font-mono flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/15 text-destructive hover:bg-destructive/25 hover:border-destructive/60 py-2.5 rounded-xl transition-all font-bold"
+                  className="w-full text-xs font-mono flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/15 text-destructive hover:bg-destructive/25 hover:border-destructive/60 py-2.5 rounded-xl transition-all font-bold focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none"
                   aria-label="Leave Room"
                 >
-                  <LogOut className="h-3.5 w-3.5" />
-                  [LEAVE CHANNEL]
+                  <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>[LEAVE CHANNEL]</span>
                 </Button>
               )}
             </div>

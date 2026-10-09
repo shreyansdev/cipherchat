@@ -98,13 +98,16 @@ Redis 7 (RAM-Only Cluster Mode: Messages, Metadata, Presence)
 ## 4. Key Features
 
 - **Isolated Rooms by Slug:** Auto-generated human-readable cryptographic slugs (e.g., `quantum-vault-6443`) with one-click re-roll and locked input fields during room creation.
+- **In-Browser Web Crypto Sandbox:** Live interactive SubtleCrypto playground demonstrating client-side PBKDF2 key derivation, 96-bit random IVs, and AES-256-GCM encryption with dual-perspective inspection (*What Server Sees* vs *What Peer Decrypts*).
+- **Interactive Protocol Pipeline:** 4-phase interactive architectural breakdown detailing Key Synthesis, Client Encryption, Ephemeral Relay, and Peer Decryption with copyable code snippets.
+- **Cryptographic Threat Model & Security FAQ:** Accessible interactive accordions addressing zero-knowledge relays, RAM forensics, encrypted file sharing, and ephemeral TTL self-destruction.
 - **Custom Room Lifespan:** Creator sets hard TTL expiration options: `1 Hour`, `6 Hours`, `24 Hours`, or `7 Days`.
 - **Password Protection:** Optional password protection hashed server-side via `bcrypt` (cost factor 12).
 - **Grace Period Auto-Deletion:** Automatically destroys empty rooms after a 2-minute countdown once the last participant leaves, while canceling deletion if someone rejoins.
 - **Real-Time Presence & Typing Indicators:** Live participant roster and typing cues via Redis-backed presence sets.
 - **Encrypted Media Sharing:** Client-side encrypted file/image uploads with strict MIME-type validation and room-lifetime expiration.
 - **Airtight Message Deduplication:** Client-side optimistic rendering combined with payload and ID fingerprint deduplication.
-- **Full-Width Modern Terminal UI:** Obsidian dark theme with cyber-cyan accents, responsive desktop/mobile layout, and autofill styling protection.
+- **Full-Width Modern Cyber UI:** Obsidian dark theme (`#030509`) with floating pill navbar, particle drift canvas, cyber-emerald and electric-cyan accents, responsive desktop/mobile layout, and autofill styling protection.
 - **Multi-Tier Rate Limiting:** Per-IP HTTP rate limiting via `express-rate-limit` and per-socket sliding-window message throttling.
 
 ---
@@ -144,8 +147,9 @@ cipherchat/
 │   └── server.js                # Server entry point & graceful shutdown
 ├── src/                         # React 18 + TypeScript Frontend
 │   ├── components/
-│   │   ├── chat/                # Header, MessageBubble, ChatInput, UserList, Modals
-│   │   └── ui/                  # Button, Input, Card, Modal, UI primitives
+│   │   ├── chat/                # Header, MessageBubble, MessageInput, UserList, Modals
+│   │   ├── home/                # CryptoPlayground, ProtocolPipeline, SecurityFaq
+│   │   └── ui/                  # Button, Input, NavigationMenu, ParticleDrift, Sheet
 │   ├── contexts/
 │   │   └── ChatContext.tsx      # Global chat reducer, deduplication & key state
 │   ├── hooks/
@@ -156,11 +160,12 @@ cipherchat/
 │   │   ├── errors.ts            # Error codes and messages
 │   │   └── utils.ts             # Tailwind class merging & slug generator
 │   ├── pages/
-│   │   ├── HomePage.tsx         # Full-width landing page & dispatcher terminal
-│   │   └── ChatPage.tsx         # Real-time encrypted chat room interface
+│   │   ├── HomePage.tsx         # Redesigned landing page & dispatcher terminal
+│   │   └── ChatPage.tsx         # Real-time encrypted chat room cockpit
 │   ├── types/                   # TypeScript interface definitions
 │   ├── App.tsx                  # App router configuration
 │   └── index.css                # Global styles, scanline animations & autofill overrides
+
 ├── tests/
 │   ├── unit/                    # Vitest unit test suites
 │   ├── integration/             # Vitest Redis integration tests

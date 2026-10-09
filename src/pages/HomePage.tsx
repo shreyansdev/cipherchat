@@ -17,23 +17,28 @@ import {
   X,
   FileText,
   AlertTriangle,
-  Users
+  Users,
+  Copy
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Label from '../components/ui/Label';
 import Switch from '../components/ui/Switch';
 import PasswordModal from '../components/chat/PasswordModal';
+import AnimatedNavFramer, { NavItem } from '../components/ui/navigation-menu';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createRoom, checkRoomProtection, verifyRoomPassword } from '../lib/api';
 import DOMPurify from 'dompurify';
 import { ERROR_MESSAGES, ERROR_CODES } from '../lib/errors';
+import CryptoPlayground from '../components/home/CryptoPlayground';
+import ProtocolPipeline from '../components/home/ProtocolPipeline';
+import SecurityFaq from '../components/home/SecurityFaq';
 
 const ROOM_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
-const ADJECTIVES = ['cyber', 'neon', 'quantum', 'stealth', 'shadow', 'hyper', 'crypto', 'dark', 'void', 'sonic'];
-const NOUNS = ['pulse', 'matrix', 'vault', 'cipher', 'nexus', 'shield', 'specter', 'core', 'signal', 'node'];
-const RANDOM_ALIASES = ['Ghost_Protocol', 'Cipher_007', 'Neon_Specter', 'Quantum_Rebel', 'Void_Runner', 'Shadow_Agent'];
+const ADJECTIVES = ['cyber', 'neon', 'quantum', 'stealth', 'shadow', 'hyper', 'crypto', 'dark', 'void', 'sonic', 'phantom', 'zero'];
+const NOUNS = ['pulse', 'matrix', 'vault', 'cipher', 'nexus', 'shield', 'specter', 'core', 'signal', 'node', 'relay', 'bastion'];
+const RANDOM_ALIASES = ['Ghost_Protocol', 'Cipher_007', 'Neon_Specter', 'Quantum_Rebel', 'Void_Runner', 'Shadow_Agent', 'Cipherpunk_42'];
 
 const generateRandomSlug = () => {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
@@ -49,19 +54,19 @@ interface InitialViewProps {
 const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
   <motion.div
     key="initial"
-    initial={{ opacity: 0, y: 15 }}
+    initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -15, transition: { duration: 0.15 } }}
-    transition={{ duration: 0.3, ease: 'easeOut' }}
+    exit={{ opacity: 0, y: -12, transition: { duration: 0.15 } }}
+    transition={{ duration: 0.25, ease: 'easeOut' }}
     className="p-6 sm:p-8 space-y-6"
   >
-    {/* Cyber Logo Emblem */}
+    {/* Cyber Emblem Badge */}
     <div className="flex justify-center relative">
       <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-cyan-500/20 blur-xl animate-pulse"></div>
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-emerald-500/10 to-purple-500/20 border border-cyan-500/40 flex items-center justify-center relative shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-          <Shield className="h-8 w-8 sm:h-10 sm:w-10 text-cyber-green animate-pulse" strokeWidth={1.75} />
-          <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-cyber-cyan absolute" strokeWidth={2} />
+        <div className="absolute inset-0 rounded-2xl bg-cyan-500/25 blur-xl animate-pulse" aria-hidden="true" />
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-emerald-500/10 to-purple-500/20 border border-cyan-400/50 flex items-center justify-center relative shadow-[0_0_30px_rgba(0,240,255,0.25)]">
+          <Shield className="h-8 w-8 sm:h-10 sm:w-10 text-cyber-green animate-pulse" strokeWidth={1.75} aria-hidden="true" />
+          <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-cyber-cyan absolute" strokeWidth={2} aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -69,52 +74,53 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
     {/* Title Section */}
     <div className="text-center space-y-2.5">
       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-mono text-cyber-cyan tracking-wider">
-        <Sparkles className="h-3 w-3 animate-spin" style={{ animationDuration: '6s' }} />
+        <Sparkles className="h-3 w-3 animate-spin" style={{ animationDuration: '6s' }} aria-hidden="true" />
         <span>ZERO-KNOWLEDGE PROTOCOL v2.4</span>
       </div>
       <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono">
         <span className="text-cyber-green">&gt;_</span> CIPHER<span className="text-cyber-cyan">CHAT</span>
       </h2>
-      <p className="text-muted-foreground text-xs sm:text-sm font-mono uppercase tracking-widest">
+      <p className="text-slate-400 text-xs sm:text-sm font-mono uppercase tracking-widest">
         [ENCRYPTED] • [EPHEMERAL] • [ANONYMOUS]
       </p>
+
       <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground font-mono pt-1">
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px]">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
-          <span>E2EE AES-256</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+          <span>E2EE AES-256-GCM</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px]">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-semibold">
+          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" aria-hidden="true" />
           <span>ZERO LOGS</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px]">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></div>
-          <span>AUTO-PURGE</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[11px] font-semibold">
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" aria-hidden="true" />
+          <span>AUTO-PURGE RAM</span>
         </div>
       </div>
     </div>
 
     {/* Security Guarantees Mini Grid */}
     <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
-      <div className="bg-[#080b10]/60 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10]/90 transition-all group">
-        <UserX className="h-4 w-4 text-cyber-green mb-1.5 group-hover:scale-110 transition-transform" />
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+        <UserX className="h-4 w-4 text-cyber-green mb-1.5 group-hover:scale-110 transition-transform" aria-hidden="true" />
         <div className="text-slate-200 font-bold text-xs">Anonymous</div>
-        <div className="text-muted-foreground text-[10px]">No accounts or telemetry</div>
+        <div className="text-slate-400 text-[10px]">No accounts or telemetry</div>
       </div>
-      <div className="bg-[#080b10]/60 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10]/90 transition-all group">
-        <Terminal className="h-4 w-4 text-cyber-cyan mb-1.5 group-hover:scale-110 transition-transform" />
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+        <Terminal className="h-4 w-4 text-cyber-cyan mb-1.5 group-hover:scale-110 transition-transform" aria-hidden="true" />
         <div className="text-slate-200 font-bold text-xs">Ephemeral</div>
-        <div className="text-muted-foreground text-[10px]">Strict Redis memory TTL</div>
+        <div className="text-slate-400 text-[10px]">Strict Redis memory TTL</div>
       </div>
-      <div className="bg-[#080b10]/60 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10]/90 transition-all group">
-        <Lock className="h-4 w-4 text-cyber-purple mb-1.5 group-hover:scale-110 transition-transform" />
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+        <Lock className="h-4 w-4 text-cyber-purple mb-1.5 group-hover:scale-110 transition-transform" aria-hidden="true" />
         <div className="text-slate-200 font-bold text-xs">Encrypted</div>
-        <div className="text-muted-foreground text-[10px]">Client-side Web Crypto</div>
+        <div className="text-slate-400 text-[10px]">Client-side Web Crypto</div>
       </div>
-      <div className="bg-[#080b10]/60 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10]/90 transition-all group">
-        <Fingerprint className="h-4 w-4 text-cyber-red mb-1.5 group-hover:scale-110 transition-transform" />
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+        <Fingerprint className="h-4 w-4 text-cyber-red mb-1.5 group-hover:scale-110 transition-transform" aria-hidden="true" />
         <div className="text-slate-200 font-bold text-xs">Private</div>
-        <div className="text-muted-foreground text-[10px]">Zero disk persistence</div>
+        <div className="text-slate-400 text-[10px]">Zero disk persistence</div>
       </div>
     </div>
 
@@ -122,27 +128,27 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
     <div className="space-y-3 pt-1">
       <Button 
         onClick={() => onSetMode('create')} 
-        className="w-full font-mono uppercase tracking-wider bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.3)] transition-all h-12 rounded-xl text-sm font-bold" 
+        className="w-full font-mono uppercase tracking-wider bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.35)] transition-all h-12 rounded-xl text-sm font-bold focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none" 
         size="lg"
       >
-        <Zap className="mr-2 h-4 w-4" />
+        <Zap className="mr-2 h-4 w-4" aria-hidden="true" />
         [CREATE SECURE ROOM]
       </Button>
       <Button 
         onClick={() => onSetMode('join')} 
         variant="secondary" 
-        className="w-full font-mono uppercase tracking-wider bg-[#080b10]/70 hover:bg-[#080b10] text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,240,255,0.2)] transition-all h-12 rounded-xl text-sm font-bold" 
+        className="w-full font-mono uppercase tracking-wider bg-[#080b10]/80 hover:bg-[#080b10] text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,240,255,0.25)] transition-all h-12 rounded-xl text-sm font-bold focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" 
         size="lg"
       >
-        <KeyRound className="mr-2 h-4 w-4" />
+        <KeyRound className="mr-2 h-4 w-4" aria-hidden="true" />
         [JOIN EXISTING ROOM]
       </Button>
     </div>
 
     {/* Footer Security Notice */}
     <div className="text-center text-[10px] text-muted-foreground font-mono border-t border-cyan-500/20 pt-3.5">
-      <div className="text-cyber-amber/90 font-bold">⚡ HARD EPHEMERAL TTL • IN-MEMORY STORAGE ONLY</div>
-      <div className="text-muted-foreground/60 mt-1">NO DATA RETENTION • NO SERVER-SIDE PLAINTEXT</div>
+      <div className="text-cyber-amber font-bold">⚡ HARD EPHEMERAL TTL • IN-MEMORY STORAGE ONLY</div>
+      <div className="text-slate-500 mt-1">NO DATA RETENTION • NO SERVER-SIDE PLAINTEXT</div>
     </div>
   </motion.div>
 );
@@ -164,6 +170,7 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordModalError, setPasswordModalError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
   const navigate = useNavigate();
 
   // Ensure create mode always initializes with a random slug
@@ -193,9 +200,11 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
   }, [rateLimitSeconds]);
 
   const handleGenerateSlug = () => {
+    setIsGeneratingSlug(true);
     const slug = generateRandomSlug();
     setRoomName(slug);
     if (error) setError(null);
+    setTimeout(() => setIsGeneratingSlug(false), 300);
   };
 
   const handleRandomAlias = () => {
@@ -203,6 +212,24 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
     setDisplayName(alias);
     if (error) setError(null);
   };
+
+  // Compute visual password strength meter
+  const getPasswordStrength = (pwd: string) => {
+    if (!pwd) return { score: 0, label: 'None', color: 'bg-slate-700' };
+    let score = 0;
+    if (pwd.length >= 8) score += 1;
+    if (pwd.length >= 12) score += 1;
+    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    if (score <= 2) return { score: 1, label: 'Weak', color: 'bg-red-500' };
+    if (score <= 3) return { score: 2, label: 'Moderate', color: 'bg-amber-500' };
+    if (score <= 4) return { score: 3, label: 'Strong', color: 'bg-cyan-400' };
+    return { score: 4, label: 'Fortified', color: 'bg-emerald-400' };
+  };
+
+  const pwdStrength = getPasswordStrength(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -308,16 +335,17 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
         {/* Header Navigation */}
         <div className="mb-5 pb-4 border-b border-cyan-500/20">
           <button
+            type="button"
             onClick={onBack}
-            className="text-cyber-cyan hover:text-white transition-colors mb-2.5 flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider group"
+            className="text-cyber-cyan hover:text-white transition-colors mb-2.5 flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider group focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded-md px-1"
           >
-            <span className="group-hover:-translate-x-1 transition-transform">&lt;</span> BACK TO HUB
+            <span className="group-hover:-translate-x-1 transition-transform" aria-hidden="true">&lt;</span> BACK TO HUB
           </button>
           <h3 className="text-xl sm:text-2xl font-bold text-white font-mono flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-cyber-green" />
+            <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-cyber-green" aria-hidden="true" />
             {mode === 'create' ? '[CREATE ENCRYPTED ROOM]' : '[JOIN SECURE ROOM]'}
           </h3>
-          <p className="text-muted-foreground text-xs font-mono mt-1">
+          <p className="text-slate-400 text-xs font-mono mt-1">
             {mode === 'create' 
               ? 'INITIALIZE SECURE EPHEMERAL CHANNEL' 
               : 'CONNECT TO EXISTING ENCRYPTED ROOM'}
@@ -329,10 +357,10 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
           {/* Room Name */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="roomName" className="font-mono text-xs text-cyber-green uppercase tracking-wider flex items-center gap-1.5">
+              <Label htmlFor="roomName" className="font-mono text-xs text-cyber-green uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
                 <span>&gt; Room Identifier</span>
                 {mode === 'create' && (
-                  <span className="text-[10px] text-muted-foreground/80 font-normal lowercase tracking-normal">
+                  <span className="text-[10px] text-slate-400 font-normal lowercase tracking-normal">
                     (auto-generated)
                   </span>
                 )}
@@ -341,35 +369,39 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                 <button
                   type="button"
                   onClick={handleGenerateSlug}
-                  className="text-[11px] text-cyber-cyan hover:text-white flex items-center gap-1 font-mono transition-colors"
+                  className="text-[11px] text-cyber-cyan hover:text-white flex items-center gap-1 font-mono transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded px-1"
                   title="Generate new random identifier"
+                  aria-label="Generate new random identifier"
                 >
-                  <RefreshCw className="h-3 w-3" />
-                  [Random Slug]
+                  <RefreshCw className={`h-3 w-3 ${isGeneratingSlug ? 'animate-spin' : ''}`} aria-hidden="true" />
+                  <span>[Random Slug]</span>
                 </button>
               )}
             </div>
             <div className="relative">
               <Input
                 id="roomName"
+                name="roomName"
                 value={roomName}
                 readOnly={mode === 'create'}
                 onChange={mode === 'create' ? undefined : handleInputChange(setRoomName)}
                 placeholder="enter-room-name"
-                className={`font-mono border-cyan-500/30 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white placeholder:text-muted-foreground/40 rounded-xl ${
+                spellCheck={false}
+                autoComplete="off"
+                className={`font-mono border-cyan-500/30 focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 text-white placeholder:text-slate-600 rounded-xl ${
                   mode === 'create'
-                    ? 'bg-[#080b10]/90 text-emerald-400 font-bold select-all cursor-default pr-9 border-emerald-500/30'
-                    : 'bg-[#080b10]/70'
+                    ? 'bg-[#080b10]/90 text-emerald-400 font-bold select-all cursor-default pr-9 border-emerald-500/40'
+                    : 'bg-[#080b10]/80'
                 }`}
               />
               {mode === 'create' && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400/60 pointer-events-none" title="Random Identifier">
-                  <Lock className="h-3.5 w-3.5" />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400/70 pointer-events-none" title="Random Identifier">
+                  <Lock className="h-3.5 w-3.5" aria-hidden="true" />
                 </div>
               )}
             </div>
             {mode === 'create' && (
-              <div className="text-[10px] font-mono text-muted-foreground/80 flex items-center gap-1">
+              <div className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
                 <span>⚡ Ephemeral channel ID randomly assigned for zero metadata linkability.</span>
               </div>
             )}
@@ -378,38 +410,42 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
           {/* Display Name */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="displayName" className="font-mono text-xs text-cyber-cyan uppercase tracking-wider">
+              <Label htmlFor="displayName" className="font-mono text-xs text-cyber-cyan uppercase tracking-wider cursor-pointer">
                 &gt; Anonymous Alias
               </Label>
               <button
                 type="button"
                 onClick={handleRandomAlias}
-                className="text-[11px] text-cyber-cyan/80 hover:text-white flex items-center gap-1 font-mono transition-colors"
+                className="text-[11px] text-cyber-cyan/90 hover:text-white flex items-center gap-1 font-mono transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded px-1"
+                aria-label="Generate random alias"
               >
-                <Sparkles className="h-3 w-3" />
-                [Random Alias]
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                <span>[Random Alias]</span>
               </button>
             </div>
             <Input
               id="displayName"
+              name="displayName"
               value={displayName}
               onChange={handleInputChange(setDisplayName)}
               placeholder="anonymous-user"
-              className="font-mono bg-[#080b10]/70 border-cyan-500/30 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white placeholder:text-muted-foreground/40 rounded-xl"
+              spellCheck={false}
+              autoComplete="off"
+              className="font-mono bg-[#080b10]/80 border-cyan-500/30 focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 text-white placeholder:text-slate-600 rounded-xl"
             />
           </div>
 
           {/* Password Protection (Create mode only) */}
           {mode === 'create' && (
             <>
-              <div className="flex items-center justify-between p-3 bg-[#080b10]/60 border border-cyan-500/20 rounded-xl">
+              <div className="flex items-center justify-between p-3.5 bg-[#080b10]/80 border border-cyan-500/25 rounded-xl">
                 <div className="flex items-center gap-2.5">
-                  <Lock className="h-4 w-4 text-cyber-purple" />
+                  <Lock className="h-4 w-4 text-cyber-purple" aria-hidden="true" />
                   <div>
-                    <Label htmlFor="protected" className="font-mono text-xs text-white uppercase cursor-pointer">
+                    <Label htmlFor="protected" className="font-mono text-xs text-white uppercase cursor-pointer block font-bold">
                       Password Protection
                     </Label>
-                    <div className="text-[10px] font-mono text-muted-foreground">Derives in-browser AES-256 key</div>
+                    <div className="text-[10px] font-mono text-slate-400">Derives in-browser AES-256 key</div>
                   </div>
                 </div>
                 <Switch
@@ -420,10 +456,10 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
               </div>
 
               {!isProtected && (
-                <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[11px] font-mono text-amber-300/90 leading-tight">
-                    <strong className="text-amber-300">Public Channel:</strong> Anyone who discovers this room slug can decrypt and read messages. Set a password for end-to-end confidential chats.
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <p className="text-[11px] font-mono text-amber-300/90 leading-relaxed">
+                    <strong className="text-amber-300">Public Channel:</strong> Anyone with this room identifier can decrypt messages. Enable password protection for confidential E2EE chats.
                   </p>
                 </div>
               )}
@@ -436,29 +472,53 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                   className="space-y-3.5 pt-1"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="password" className="font-mono text-xs text-cyber-purple uppercase tracking-wider">
-                      &gt; Encryption Key
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="font-mono text-xs text-cyber-purple uppercase tracking-wider cursor-pointer font-bold">
+                        &gt; Encryption Key
+                      </Label>
+                      {password && (
+                        <span className="text-[10px] font-mono text-slate-400">
+                          Strength: <span className="font-bold text-slate-200">{pwdStrength.label}</span>
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
                       <Input
                         id="password"
+                        name="password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={handleInputChange(setPassword)}
                         placeholder="••••••••"
                         required={isProtected}
-                        className="font-mono bg-[#080b10]/70 border-purple-500/40 focus:border-purple-400 focus:ring-1 focus:ring-purple-400 text-white pr-10 rounded-xl"
+                        spellCheck={false}
+                        autoComplete="new-password"
+                        className="font-mono bg-[#080b10]/90 border-purple-500/40 focus-visible:border-purple-400 focus-visible:ring-2 focus-visible:ring-purple-400 text-white pr-10 rounded-xl"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors p-1"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:outline-none rounded"
                         title={showPassword ? "Hide password" : "Show password"}
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
-                        {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        {showPassword ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
                       </button>
                     </div>
+
+                    {/* Password Strength Indicator Bars */}
+                    {password && (
+                      <div className="grid grid-cols-4 gap-1.5 pt-1">
+                        {[1, 2, 3, 4].map((step) => (
+                          <div
+                            key={step}
+                            className={`h-1 rounded-full transition-all duration-300 ${
+                              step <= pwdStrength.score ? pwdStrength.color : 'bg-slate-800'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -477,10 +537,10 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                           key={option.value}
                           type="button"
                           onClick={() => setTtl(option.value)}
-                          className={`py-2 px-2 border font-mono text-xs rounded-xl transition-all font-bold ${
+                          className={`py-2 px-2 border font-mono text-xs rounded-xl transition-all font-bold focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
                             ttl === option.value
-                              ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
-                              : 'bg-[#080b10]/50 border-cyan-500/20 text-muted-foreground hover:border-cyan-500/50 hover:text-slate-200'
+                              ? 'bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.25)]'
+                              : 'bg-[#080b10]/60 border-cyan-500/20 text-slate-400 hover:border-cyan-500/50 hover:text-slate-200'
                           }`}
                         >
                           {option.label}
@@ -496,9 +556,10 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
           {/* Error Message */}
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-3 bg-destructive/15 border border-destructive/50 rounded-xl text-destructive text-xs font-mono flex items-center gap-2"
+              role="alert"
             >
               <span>[ERROR] {rateLimitSeconds > 0 && error.includes('Too many attempts') 
                 ? ERROR_MESSAGES.RATE_LIMITED(rateLimitSeconds) 
@@ -510,17 +571,17 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
           <Button
             type="submit"
             disabled={isLoading || rateLimitSeconds > 0}
-            className={`w-full font-mono uppercase tracking-wider h-12 rounded-xl text-sm font-bold transition-all ${
+            className={`w-full font-mono uppercase tracking-wider h-12 rounded-xl text-sm font-bold transition-all focus-visible:ring-2 focus-visible:outline-none ${
               mode === 'create'
-                ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.3)]'
-                : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,240,255,0.3)]'
+                ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.35)] focus-visible:ring-emerald-400'
+                : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(0,240,255,0.35)] focus-visible:ring-cyan-400'
             }`}
             size="lg"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                <span className="animate-pulse">[CONNECTING...]</span>
+                <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
+                <span className="animate-pulse">[CONNECTING…]</span>
               </span>
             ) : rateLimitSeconds > 0 ? (
               <span>[RETRY IN {rateLimitSeconds}S]</span>
@@ -531,9 +592,9 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
         </form>
 
         {/* Security Telemetry Notice */}
-        <div className="mt-5 p-3 bg-[#080b10]/60 border border-cyan-500/20 rounded-xl text-[10px] font-mono text-muted-foreground">
+        <div className="mt-5 p-3.5 bg-[#080b10]/70 border border-cyan-500/20 rounded-xl text-[10px] font-mono text-slate-400">
           <div className="flex items-start gap-2.5">
-            <Shield className="h-4 w-4 text-cyber-green mt-0.5 flex-shrink-0" />
+            <Shield className="h-4 w-4 text-cyber-green mt-0.5 flex-shrink-0" aria-hidden="true" />
             <div className="space-y-1">
               <div className="text-cyber-green font-bold uppercase tracking-wider">CRYPTOGRAPHIC ASSURANCES</div>
               <div className="text-slate-400 leading-relaxed">
@@ -572,161 +633,124 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080b10] text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-cyan-500/30 selection:text-white">
+    <div className="min-h-screen bg-transparent text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-cyan-500/30 selection:text-white">
       {/* Background Ambient Glows */}
-      <div className="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed bottom-[-10%] right-[-5%] w-[600px] h-[400px] bg-purple-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-gradient-to-b from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10 opacity-70" aria-hidden="true" />
+      <div className="fixed bottom-[-10%] right-[-5%] w-[700px] h-[450px] bg-purple-500/5 rounded-full blur-3xl pointer-events-none -z-10 opacity-60" aria-hidden="true" />
 
       {/* ========================================================================= */}
-      {/* TOP NAVIGATION HEADER */}
+      {/* TOP NAVIGATION: ANIMATED FRAMER MOTION PILL NAVBAR */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#080b10]/80 border-b border-cyan-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo & Protocol Badge */}
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                setMode('initial');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="flex items-center gap-2.5 group text-left"
-            >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 via-emerald-500/10 to-purple-500/20 border border-cyan-500/40 flex items-center justify-center relative shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:border-cyan-400 transition-colors">
-                <Shield className="h-5 w-5 text-cyber-green" strokeWidth={1.75} />
-                <Lock className="h-2.5 w-2.5 text-cyber-cyan absolute" strokeWidth={2.5} />
-              </div>
-              <div>
-                <div className="font-mono font-extrabold text-base tracking-wider text-white flex items-center gap-1">
-                  <span className="text-cyber-green">&gt;_</span>CIPHER<span className="text-cyber-cyan">CHAT</span>
-                </div>
-                <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest hidden sm:block">
-                  ZERO-KNOWLEDGE PROTOCOL
-                </div>
-              </div>
-            </button>
-
-            <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-              v2.4 LTS
-            </span>
-          </div>
-
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 font-mono text-xs text-muted-foreground">
-            <button 
-              onClick={() => scrollToSection('protocol')} 
-              className="hover:text-cyber-cyan transition-colors"
-            >
-              // PROTOCOL
-            </button>
-            <button 
-              onClick={() => scrollToSection('security')} 
-              className="hover:text-cyber-cyan transition-colors"
-            >
-              // SECURITY
-            </button>
-            <button 
-              onClick={() => scrollToSection('comparison')} 
-              className="hover:text-cyber-cyan transition-colors"
-            >
-              // SPECS
-            </button>
-          </nav>
-
-          {/* System Status Indicator & Quick CTA */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-[11px] font-mono">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-emerald-400 font-bold">MEMORY-ONLY</span>
+      <AnimatedNavFramer
+        items={[
+          { name: "Home", href: "#" },
+          { name: "Playground", href: "#playground" },
+          { name: "Protocol", href: "#protocol" },
+          { name: "Security", href: "#security" },
+          { name: "Specs", href: "#comparison" },
+          { name: "FAQ", href: "#faq" },
+        ]}
+        logo={
+          <button
+            type="button"
+            onClick={() => {
+              setMode('initial');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-2 group text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded-lg p-0.5"
+            aria-label="Home"
+          >
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/25 via-emerald-500/15 to-purple-500/25 border border-cyan-400/50 flex items-center justify-center relative shadow-[0_0_15px_rgba(0,240,255,0.25)] group-hover:border-cyan-300 transition-colors">
+              <Shield className="h-4 w-4 text-cyber-green" strokeWidth={1.75} aria-hidden="true" />
+              <Lock className="h-2 w-2 text-cyber-cyan absolute" strokeWidth={2.5} aria-hidden="true" />
             </div>
-
-            {mode === 'initial' ? (
-              <Button
-                onClick={() => {
-                  setMode('create');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="font-mono text-xs uppercase tracking-wider bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 h-9 px-3.5 rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(0,255,101,0.15)]"
-              >
-                <Zap className="mr-1.5 h-3.5 w-3.5" />
-                <span className="hidden sm:inline">LAUNCH ROOM</span>
-                <span className="sm:hidden">LAUNCH</span>
-              </Button>
-            ) : (
-              <Button
-                onClick={() => setMode('initial')}
-                variant="secondary"
-                className="font-mono text-xs uppercase tracking-wider bg-[#0d1420] text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 h-9 px-3.5 rounded-lg font-bold transition-all"
-              >
-                HUB
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+            <span className="font-mono font-extrabold text-xs tracking-wider text-white hidden sm:flex items-center gap-0.5">
+              <span className="text-cyber-green">&gt;_</span>CIPHER<span className="text-cyber-cyan">CHAT</span>
+            </span>
+          </button>
+        }
+        onItemClick={(item, e) => {
+          e.preventDefault();
+          const name = item.name.toLowerCase();
+          if (name === 'home' || item.href === '#') {
+            setMode('initial');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (name === 'playground') {
+            scrollToSection('playground');
+          } else if (name === 'protocol' || name === 'about') {
+            scrollToSection('protocol');
+          } else if (name === 'security' || name === 'services') {
+            scrollToSection('security');
+          } else if (name === 'specs' || name === 'contact') {
+            scrollToSection('comparison');
+          } else if (name === 'faq') {
+            scrollToSection('faq');
+          } else if (item.href.startsWith('#')) {
+            scrollToSection(item.href.slice(1));
+          }
+        }}
+      />
 
       {/* ========================================================================= */}
       {/* MAIN HERO SECTION (2-Column Grid on Desktop, Stacked on Mobile) */}
       {/* ========================================================================= */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16 lg:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* Left Column: Hero Narrative & Cryptographic Telemetry */}
           <div className="lg:col-span-6 xl:col-span-7 space-y-6 text-left">
             
             {/* Top Eyebrow Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyber-cyan tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.1)]">
-              <span className="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyber-cyan tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.12)]">
+              <span className="w-2 h-2 rounded-full bg-cyber-green animate-pulse" aria-hidden="true" />
               <span>MIL-SPEC ENCRYPTION • ZERO DISK RESIDUE</span>
             </div>
 
             {/* Giant Main Headline */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-white font-mono leading-tight">
                 Ephemeral Rooms. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400">
                   Zero Metadata Trace.
                 </span>
               </h1>
-              <p className="text-slate-300 text-sm sm:text-base lg:text-lg font-mono leading-relaxed pt-2">
+              <p className="text-slate-300 text-sm sm:text-base lg:text-lg font-mono leading-relaxed pt-1 max-w-2xl">
                 Real-time, zero-knowledge chat channels with browser-derived AES-256-GCM keys. All messages reside strictly in volatile Redis RAM with hard TTL expiration.
               </p>
             </div>
 
-            {/* Key Metric Highlights */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-xl p-3.5 font-mono">
-                <div className="text-xs text-muted-foreground uppercase">Cipher</div>
+            {/* Key Metric Highlights with tabular numbers */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 font-mono tabular-nums">
+              <div className="bg-[#0b121e]/80 border border-cyan-500/20 rounded-xl p-3.5">
+                <div className="text-xs text-slate-400 uppercase">Cipher</div>
                 <div className="text-lg font-bold text-cyber-green">AES-256</div>
-                <div className="text-[10px] text-muted-foreground/80">GCM Authenticated</div>
+                <div className="text-[10px] text-slate-500">GCM Authenticated</div>
               </div>
-              <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-xl p-3.5 font-mono">
-                <div className="text-xs text-muted-foreground uppercase">KDF Iterations</div>
+              <div className="bg-[#0b121e]/80 border border-cyan-500/20 rounded-xl p-3.5">
+                <div className="text-xs text-slate-400 uppercase">KDF Iterations</div>
                 <div className="text-lg font-bold text-cyber-cyan">310,000</div>
-                <div className="text-[10px] text-muted-foreground/80">PBKDF2 SHA-256</div>
+                <div className="text-[10px] text-slate-500">PBKDF2 SHA-256</div>
               </div>
-              <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-xl p-3.5 font-mono">
-                <div className="text-xs text-muted-foreground uppercase">Server Plaintext</div>
+              <div className="bg-[#0b121e]/80 border border-cyan-500/20 rounded-xl p-3.5">
+                <div className="text-xs text-slate-400 uppercase">Server Plaintext</div>
                 <div className="text-lg font-bold text-purple-400">0.00%</div>
-                <div className="text-[10px] text-muted-foreground/80">End-to-End Blind</div>
+                <div className="text-[10px] text-slate-500">End-to-End Blind</div>
               </div>
-              <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-xl p-3.5 font-mono">
-                <div className="text-xs text-muted-foreground uppercase">Persistence</div>
+              <div className="bg-[#0b121e]/80 border border-cyan-500/20 rounded-xl p-3.5">
+                <div className="text-xs text-slate-400 uppercase">Persistence</div>
                 <div className="text-lg font-bold text-cyber-amber">0 Disk</div>
-                <div className="text-[10px] text-muted-foreground/80">Pure RAM + Hard TTL</div>
+                <div className="text-[10px] text-slate-500">Pure RAM + Hard TTL</div>
               </div>
             </div>
 
             {/* Live Cryptographic Telemetry Console */}
-            <div className="bg-[#05070a]/90 border border-cyan-500/30 rounded-2xl p-4 sm:p-5 font-mono shadow-[0_0_30px_rgba(0,240,255,0.08)] relative overflow-hidden">
+            <div className="bg-[#05080e]/90 border border-cyan-500/30 rounded-2xl p-4 sm:p-5 font-mono shadow-[0_0_30px_rgba(0,240,255,0.08)] relative overflow-hidden">
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-cyan-500/20 text-xs">
                 <div className="flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-cyber-green" />
+                  <Terminal className="h-4 w-4 text-cyber-green" aria-hidden="true" />
                   <span className="text-slate-200 font-bold tracking-wider">LIVE_SECURITY_TELEMETRY.SYS</span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
                   SYSTEM READY
                 </span>
               </div>
@@ -752,19 +776,19 @@ const HomePage: React.FC = () => {
 
             {/* Feature Pills */}
             <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs text-muted-foreground">
-              <span className="px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-slate-300">
+              <span className="px-2.5 py-1 rounded-lg bg-[#0b121e] border border-cyan-500/20 text-slate-300">
                 #NoAccounts
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-slate-300">
+              <span className="px-2.5 py-1 rounded-lg bg-[#0b121e] border border-cyan-500/20 text-slate-300">
                 #ZeroTelemetry
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-slate-300">
+              <span className="px-2.5 py-1 rounded-lg bg-[#0b121e] border border-cyan-500/20 text-slate-300">
                 #HardTTL
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-slate-300">
+              <span className="px-2.5 py-1 rounded-lg bg-[#0b121e] border border-cyan-500/20 text-slate-300">
                 #DOMPurify
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-[#0d1420] border border-cyan-500/20 text-slate-300">
+              <span className="px-2.5 py-1 rounded-lg bg-[#0b121e] border border-cyan-500/20 text-slate-300">
                 #VolatilePresence
               </span>
             </div>
@@ -777,20 +801,20 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-lg bg-[#0d1420]/90 backdrop-blur-xl border border-cyan-500/40 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.15)] relative z-10 overflow-hidden"
+              className="w-full max-w-lg bg-[#0a101a]/90 backdrop-blur-xl border border-cyan-500/40 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.15)] relative z-10 overflow-hidden"
             >
               {/* Terminal Title Bar */}
-              <div className="bg-[#080b10] px-4 py-2.5 border-b border-cyan-500/30 flex items-center justify-between">
+              <div className="bg-[#05080e] px-4 py-2.5 border-b border-cyan-500/30 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
-                  <span className="ml-2 text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" aria-hidden="true" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" aria-hidden="true" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" aria-hidden="true" />
+                  <span className="ml-2 text-[11px] font-mono text-slate-400 uppercase tracking-widest">
                     SYS://CIPHER_DISPATCHER
                   </span>
                 </div>
                 <div className="text-[10px] font-mono text-cyber-green flex items-center gap-1 font-bold">
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyber-green animate-pulse" aria-hidden="true" />
                   <span>ENCRYPTED</span>
                 </div>
               </div>
@@ -808,145 +832,46 @@ const HomePage: React.FC = () => {
           </div>
 
         </div>
+
+        {/* ========================================================================= */}
+        {/* INTERACTIVE CRYPTOGRAPHIC PLAYGROUND SECTION */}
+        {/* ========================================================================= */}
+        <section id="playground" className="mt-16 sm:mt-24 pt-10 border-t border-cyan-500/20">
+          <CryptoPlayground />
+        </section>
       </main>
 
       {/* ========================================================================= */}
-      {/* SECTION 2: HOW ZERO-KNOWLEDGE E2EE WORKS (PROTOCOL PIPELINE) */}
+      {/* SECTION 2: PROTOCOL PIPELINE ARCHITECTURE */}
       {/* ========================================================================= */}
-      <section id="protocol" className="w-full border-t border-cyan-500/20 bg-[#06090e]/80 py-16 lg:py-24 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          
-          {/* Section Header */}
-          <div className="text-center space-y-3 max-w-3xl mx-auto font-mono">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-cyber-green font-bold uppercase tracking-wider">
-              <Terminal className="h-3.5 w-3.5" />
-              // ARCHITECTURAL LIFECYCLE
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Zero-Knowledge Protocol Pipeline
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              The server acts purely as an ephemeral blind relay. Key synthesis, message encryption, and packet decryption occur exclusively inside the client runtime.
-            </p>
-          </div>
-
-          {/* 4-Step Interactive Pipeline Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 font-mono">
-            
-            {/* Step 1 */}
-            <div className="bg-[#0d1420]/70 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.12)] transition-all flex flex-col justify-between group">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-cyber-green group-hover:scale-110 transition-transform">01</span>
-                  <KeyRound className="h-6 w-6 text-cyber-green" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white uppercase">Key Synthesis</h3>
-                  <div className="text-xs text-cyber-cyan mt-1">PBKDF2-SHA256 • 310k Rounds</div>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  The client derives a 256-bit AES-GCM key using the room password and deterministic room slug salt. Keys never touch the network or server.
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-cyan-500/15 text-[10px] text-muted-foreground flex items-center gap-1">
-                <Check className="h-3 w-3 text-cyber-green" />
-                <span>Isolated in client RAM</span>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="bg-[#0d1420]/70 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.12)] transition-all flex flex-col justify-between group">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-cyber-cyan group-hover:scale-110 transition-transform">02</span>
-                  <Lock className="h-6 w-6 text-cyber-cyan" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white uppercase">Client Encryption</h3>
-                  <div className="text-xs text-cyber-cyan mt-1">AES-256-GCM + 96-bit IV</div>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  Before sending, plaintext is encrypted in-browser using Web Crypto API. A cryptographically unique 96-bit IV is generated per message.
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-cyan-500/15 text-[10px] text-muted-foreground flex items-center gap-1">
-                <Check className="h-3 w-3 text-cyber-cyan" />
-                <span>Ciphertext only over TLS</span>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="bg-[#0d1420]/70 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.12)] transition-all flex flex-col justify-between group">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-purple-400 group-hover:scale-110 transition-transform">03</span>
-                  <ShieldCheck className="h-6 w-6 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white uppercase">Ephemeral Relay</h3>
-                  <div className="text-xs text-purple-400 mt-1">Redis 7 • Zero Disk Writes</div>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  Node.js relays ciphertext packets into Redis in-memory storage. A strict TTL timer counts down until automated unrecoverable data destruction.
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-cyan-500/15 text-[10px] text-muted-foreground flex items-center gap-1">
-                <Check className="h-3 w-3 text-purple-400" />
-                <span>Auto-expiring memory</span>
-              </div>
-            </div>
-
-            {/* Step 4 */}
-            <div className="bg-[#0d1420]/70 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.12)] transition-all flex flex-col justify-between group">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-cyber-amber group-hover:scale-110 transition-transform">04</span>
-                  <Shield className="h-6 w-6 text-cyber-amber" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white uppercase">Peer Decryption</h3>
-                  <div className="text-xs text-cyber-amber mt-1">Local WebCrypto Verification</div>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  Peers receive ciphertext and decrypt locally with their derived key. Authenticated GCM tags ensure tampering or corruption is instantly rejected.
-                </p>
-              </div>
-              <div className="mt-4 pt-3 border-t border-cyan-500/15 text-[10px] text-muted-foreground flex items-center gap-1">
-                <Check className="h-3 w-3 text-cyber-amber" />
-                <span>Zero plaintext history</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      <ProtocolPipeline />
 
       {/* ========================================================================= */}
       {/* SECTION 3: CORE SECURITY GUARANTEES */}
       {/* ========================================================================= */}
-      <section id="security" className="w-full border-t border-cyan-500/20 py-16 lg:py-24">
+      <section id="security" className="w-full border-t border-cyan-500/20 py-16 sm:py-20 lg:py-24 font-mono">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
           {/* Section Header */}
-          <div className="text-center space-y-3 max-w-3xl mx-auto font-mono">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyber-cyan font-bold uppercase tracking-wider">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              // SECURITY ASSURANCES
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyber-cyan font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(0,240,255,0.12)]">
+              <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>// SECURITY ASSURANCES</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Engineered for Complete Privacy
             </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Built on transparent cryptographic principles and zero data retention standards.
+            <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
+              Built on mathematical cryptography, zero persistent retention, and blind packet relays.
             </p>
           </div>
 
           {/* 6-Grid Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-cyber-green">
-                <UserX className="h-5 w-5" />
+                <UserX className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">No User Accounts or Tracking</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -954,9 +879,9 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyber-cyan">
-                <Zap className="h-5 w-5" />
+                <Zap className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">Hard Redis Ephemeral TTL</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -964,9 +889,9 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-cyber-purple">
-                <Lock className="h-5 w-5" />
+                <Lock className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">Zero Server-Side Plaintext</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -974,9 +899,9 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-cyber-amber">
-                <ShieldCheck className="h-5 w-5" />
+                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">Bcrypt-Hashed Protection</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -984,9 +909,9 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-cyber-green">
-                <Shield className="h-5 w-5" />
+                <Shield className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">Dual-Layer DOMPurify</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -994,9 +919,9 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-[#0d1420]/80 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3">
+            <div className="bg-[#090f18]/85 border border-cyan-500/20 rounded-2xl p-6 hover:border-cyan-500/60 transition-all space-y-3 shadow-[0_0_25px_rgba(0,240,255,0.04)]">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyber-cyan">
-                <Users className="h-5 w-5" />
+                <Users className="h-5 w-5" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-bold text-white">Strict Rate Limiting</h3>
               <p className="text-xs text-slate-300 font-sans leading-relaxed">
@@ -1011,45 +936,45 @@ const HomePage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 4: TECHNICAL COMPARISON MATRIX */}
       {/* ========================================================================= */}
-      <section id="comparison" className="w-full border-t border-cyan-500/20 bg-[#06090e]/80 py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 font-mono">
+      <section id="comparison" className="w-full border-t border-cyan-500/20 bg-[#060a12]/80 py-16 sm:py-20 lg:py-24 font-mono">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           
           {/* Section Header */}
           <div className="text-center space-y-3 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs text-purple-400 font-bold uppercase tracking-wider">
-              <FileText className="h-3.5 w-3.5" />
-              // ARCHITECTURAL BENCHMARK
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs text-purple-400 font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.12)]">
+              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>// ARCHITECTURAL BENCHMARK</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               CipherChat vs Traditional Messengers
             </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
+            <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
               Comparing privacy assurances, cryptographic trust assumptions, and data lifecycle.
             </p>
           </div>
 
           {/* Comparison Table */}
-          <div className="overflow-x-auto rounded-2xl border border-cyan-500/30 bg-[#0d1420]/80 shadow-[0_0_30px_rgba(0,240,255,0.06)]">
+          <div className="overflow-x-auto rounded-2xl border border-cyan-500/30 bg-[#090f18]/85 shadow-[0_0_30px_rgba(0,240,255,0.06)]">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead>
-                <tr className="border-b border-cyan-500/30 bg-[#080b10] text-slate-400 font-bold">
-                  <th className="py-4 px-4 sm:px-6 uppercase tracking-wider">Feature / Security Parameter</th>
-                  <th className="py-4 px-4 sm:px-6 text-cyber-green uppercase tracking-wider">CipherChat</th>
-                  <th className="py-4 px-4 sm:px-6 text-slate-500 uppercase tracking-wider">Discord / Slack</th>
-                  <th className="py-4 px-4 sm:px-6 text-slate-500 uppercase tracking-wider">Telegram (Default)</th>
+                <tr className="border-b border-cyan-500/30 bg-[#05080e] text-slate-400 font-bold">
+                  <th scope="col" className="py-4 px-4 sm:px-6 uppercase tracking-wider">Feature / Security Parameter</th>
+                  <th scope="col" className="py-4 px-4 sm:px-6 text-cyber-green uppercase tracking-wider">CipherChat</th>
+                  <th scope="col" className="py-4 px-4 sm:px-6 text-slate-500 uppercase tracking-wider">Discord / Slack</th>
+                  <th scope="col" className="py-4 px-4 sm:px-6 text-slate-500 uppercase tracking-wider">Telegram (Default)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-cyan-500/15 text-slate-300">
                 <tr className="hover:bg-cyan-500/5 transition-colors">
                   <td className="py-3.5 px-4 sm:px-6 font-bold text-white">Browser-Derived AES-256 E2EE</td>
                   <td className="py-3.5 px-4 sm:px-6 text-cyber-green font-bold flex items-center gap-1.5">
-                    <Check className="h-4 w-4" /> Always Active
+                    <Check className="h-4 w-4" aria-hidden="true" /> Always Active
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-slate-500 flex items-center gap-1.5">
-                    <X className="h-4 w-4 text-destructive" /> None (Plaintext Server)
+                    <X className="h-4 w-4 text-destructive" aria-hidden="true" /> None (Plaintext Server)
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-slate-500 flex items-center gap-1.5">
-                    <X className="h-4 w-4 text-destructive" /> Server-side MTProto
+                    <X className="h-4 w-4 text-destructive" aria-hidden="true" /> Server-side MTProto
                   </td>
                 </tr>
 
@@ -1082,7 +1007,7 @@ const HomePage: React.FC = () => {
                 <tr className="hover:bg-cyan-500/5 transition-colors">
                   <td className="py-3.5 px-4 sm:px-6 font-bold text-white">User Accounts &amp; Telemetry</td>
                   <td className="py-3.5 px-4 sm:px-6 text-cyber-green font-bold flex items-center gap-1.5">
-                    <Check className="h-4 w-4" /> Zero (No Accounts/Logs)
+                    <Check className="h-4 w-4" aria-hidden="true" /> Zero (No Accounts/Logs)
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-slate-500">
                     Mandatory Email / Phone / Analytics
@@ -1111,57 +1036,64 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
+      {/* SECTION 5: CRYPTOGRAPHIC FAQ ACCORDION */}
+      {/* ========================================================================= */}
+      <SecurityFaq />
+
+      {/* ========================================================================= */}
       {/* FOOTER */}
       {/* ========================================================================= */}
-      <footer className="w-full border-t border-cyan-500/20 bg-[#080b10] py-12 text-slate-400 font-mono text-xs">
+      <footer className="w-full border-t border-cyan-500/20 bg-[#030509]/90 backdrop-blur-md py-12 text-slate-400 font-mono text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             
             {/* Logo & Statement */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/10 border border-cyan-500/40 flex items-center justify-center">
-                <Shield className="h-4 w-4 text-cyber-green" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500/25 to-emerald-500/15 border border-cyan-400/50 flex items-center justify-center">
+                <Shield className="h-4 w-4 text-cyber-green" aria-hidden="true" />
               </div>
               <div>
                 <div className="font-bold text-white text-sm">
                   <span className="text-cyber-green">&gt;_</span> CIPHER<span className="text-cyber-cyan">CHAT</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[10px] text-slate-500">
                   EPHEMERAL ZERO-KNOWLEDGE CHAT
                 </div>
               </div>
             </div>
 
             {/* Quick Spec Tags */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400">
-              <span className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyber-green"></div>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400 tabular-nums">
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-green" aria-hidden="true" />
                 AES-256-GCM
               </span>
-              <span className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyber-cyan"></div>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-cyan" aria-hidden="true" />
                 PBKDF2-SHA256
               </span>
-              <span className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-400" aria-hidden="true" />
                 Redis 7 RAM
               </span>
-              <span className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyber-amber"></div>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-amber" aria-hidden="true" />
                 Zero Disk Persistence
               </span>
             </div>
 
             {/* Back to Top / Action */}
             <button
+              type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="text-cyber-cyan hover:text-white transition-colors flex items-center gap-1 uppercase tracking-wider"
+              className="text-cyber-cyan hover:text-white transition-colors flex items-center gap-1 uppercase tracking-wider focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded px-1.5 py-0.5"
+              aria-label="Back to Top"
             >
               <span>[BACK TO TOP]</span>
             </button>
           </div>
 
-          <div className="border-t border-cyan-500/15 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-muted-foreground">
+          <div className="border-t border-cyan-500/15 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-500">
             <div>
               CIPHERCHAT ZERO-KNOWLEDGE PROTOCOL v2.4 • OPEN CRYPTOGRAPHIC SPECIFICATION
             </div>

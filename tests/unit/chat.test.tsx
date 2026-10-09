@@ -12,10 +12,16 @@ import '@testing-library/jest-dom';
 
 // Mocking framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
+  motion: new Proxy(
+    {},
+    {
+      get: (_, tag) => ({ children, ...props }: any) =>
+        React.createElement(tag as string, props, children),
+    }
+  ),
   AnimatePresence: ({ children }: any) => <>{children}</>,
+  useScroll: () => ({ scrollY: { get: () => 0 } }),
+  useMotionValueEvent: vi.fn(),
 }));
 
 // Mocking Lucide icons

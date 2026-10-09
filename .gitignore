@@ -49,10 +49,14 @@ blob-report/
 server/uploads/*
 !server/uploads/.gitkeep
 
-# AI Agent / CLI temporary artifacts
+# AI Agent / CLI temporary artifacts & Skills
 .gemini/
 .system_generated/
 scratch/
+.agents/
+skills-lock.json
+*.png
+!docs/screenshots/*.png
 
 # Internal documentation & scripts
 AUDIT_REPORT.md
