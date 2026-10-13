@@ -75,8 +75,8 @@ const Header: React.FC<HeaderProps> = ({
                 <Lock className="h-2.5 w-2.5" aria-hidden="true" />
                 <span>AES-256-GCM</span>
               </div>
-              <span className="text-slate-600" aria-hidden="true">•</span>
-              <div className="flex items-center gap-1 text-cyan-400">
+              <span className="text-slate-600 hidden sm:inline" aria-hidden="true">•</span>
+              <div className="hidden sm:flex items-center gap-1 text-cyan-400">
                 <Eye className="h-2.5 w-2.5" aria-hidden="true" />
                 <span>EPHEMERAL RAM</span>
               </div>
@@ -92,12 +92,12 @@ const Header: React.FC<HeaderProps> = ({
             variant="ghost"
             size="sm"
             onClick={onLeaveRoom}
-            className="text-destructive hover:text-white hover:bg-destructive/30 border border-destructive/40 hover:border-destructive/80 text-xs font-mono flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-bold focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none shadow-[0_0_15px_rgba(255,51,102,0.1)]"
+            className="text-destructive hover:text-white hover:bg-destructive/30 border border-destructive/40 hover:border-destructive/80 text-xs font-mono flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all font-bold focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none shadow-[0_0_15px_rgba(255,51,102,0.1)]"
             title="Leave Room"
             aria-label="Leave Room"
           >
             <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>[LEAVE]</span>
+            <span className="hidden sm:inline">[LEAVE]</span>
           </Button>
         )}
 

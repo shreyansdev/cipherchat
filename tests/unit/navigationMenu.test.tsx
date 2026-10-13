@@ -58,6 +58,58 @@ describe('AnimatedNavFramer Component', () => {
     );
     expect(screen.getByTestId('custom-logo')).toBeInTheDocument();
   });
+
+  it('renders mobile menu trigger button', () => {
+    render(<AnimatedNavFramer />);
+    const mobileTrigger = screen.getByLabelText('Open navigation menu');
+    expect(mobileTrigger).toBeInTheDocument();
+  });
+
+  it('opens mobile navigation drawer on trigger click and handles item click', () => {
+    const handleClick = vi.fn();
+    const customItems = [
+      { name: 'Protocol', href: '#protocol' },
+      { name: 'Security', href: '#security' },
+    ];
+
+    render(
+      <AnimatedNavFramer 
+        items={customItems} 
+        onItemClick={handleClick}
+      />
+    );
+
+    const mobileTrigger = screen.getByLabelText('Open navigation menu');
+    fireEvent.click(mobileTrigger);
+
+    // Mobile drawer should now be open with title and items
+    expect(screen.getByText('Navigation Protocol')).toBeInTheDocument();
+    
+    // In mobile drawer, items are clickable
+    const mobileLinks = screen.getAllByText('Protocol');
+    // One link in desktop nav, one link in mobile drawer
+    expect(mobileLinks.length).toBe(2);
+    
+    // Click the mobile drawer link
+    fireEvent.click(mobileLinks[1]);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleClick).toHaveBeenCalledWith(customItems[0], expect.anything());
+  });
+
+  it('closes mobile drawer when viewport is resized to desktop width', () => {
+    render(<AnimatedNavFramer />);
+    const mobileTrigger = screen.getByLabelText('Open navigation menu');
+    fireEvent.click(mobileTrigger);
+
+    expect(screen.getByText('Navigation Protocol')).toBeInTheDocument();
+
+    // Trigger window resize to desktop
+    window.innerWidth = 1024;
+    fireEvent(window, new Event('resize'));
+
+    // Drawer closes so title is removed
+    expect(screen.queryByText('Navigation Protocol')).not.toBeInTheDocument();
+  });
 });
 
 describe('shadcn UI Components', () => {

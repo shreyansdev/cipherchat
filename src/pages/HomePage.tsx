@@ -54,7 +54,7 @@ export const HomePage: React.FC = () => {
               <Shield className="h-4 w-4 text-cyber-green" strokeWidth={1.75} aria-hidden="true" />
               <Lock className="h-2 w-2 text-cyber-cyan absolute" strokeWidth={2.5} aria-hidden="true" />
             </div>
-            <span className="font-mono font-extrabold text-xs tracking-wider text-white hidden sm:flex items-center gap-0.5">
+            <span className="font-mono font-extrabold text-xs tracking-wider text-white flex items-center gap-0.5">
               <span className="text-cyber-green">&gt;_</span>CIPHER<span className="text-cyber-cyan">CHAT</span>
             </span>
           </button>
