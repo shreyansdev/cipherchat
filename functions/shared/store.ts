@@ -289,20 +289,86 @@ export async function getFile(fileId: string, kv?: any): Promise<StoredFile | nu
   return null;
 }
 
-export function addSession(session: UserSession): void {
+export function addSession(
+  session: UserSession,
+  kv?: any
+): Promise<Array<{ id: string; name: string }>> | Array<{ id: string; name: string }> {
   sessions.set(session.socketId, session);
+  if (kv) {
+    return (async () => {
+      try {
+        let users: Array<{ id: string; name: string; lastSeen: number }> =
+          (await kv.get(`users:${session.roomName}`, 'json')) || [];
+        const now = Date.now();
+        users = users.filter((u) => u.id !== session.userId && now - u.lastSeen < 60000);
+        users.push({ id: session.userId, name: session.userName, lastSeen: now });
+        await kv.put(`users:${session.roomName}`, JSON.stringify(users), { expirationTtl: 86400 });
+        return users.map((u) => ({ id: u.id, name: u.name }));
+      } catch {
+        // fallback
+      }
+      return getRoomUsers(session.roomName) as Array<{ id: string; name: string }>;
+    })();
+  }
+  return getRoomUsers(session.roomName) as Array<{ id: string; name: string }>;
 }
 
-export function removeSession(socketId: string): { roomName?: string; remainingUsers: Array<{ id: string; name: string }> } {
+export function removeSession(
+  socketId: string,
+  kv?: any
+): Promise<{ roomName?: string; remainingUsers: Array<{ id: string; name: string }> }> | { roomName?: string; remainingUsers: Array<{ id: string; name: string }> } {
   const session = sessions.get(socketId);
   if (!session) return { remainingUsers: [] };
   const roomName = session.roomName;
+  const userId = session.userId;
   sessions.delete(socketId);
-  const remaining = getRoomUsers(roomName);
+
+  if (kv) {
+    return (async () => {
+      try {
+        let users: Array<{ id: string; name: string; lastSeen: number }> =
+          (await kv.get(`users:${roomName}`, 'json')) || [];
+        const now = Date.now();
+        users = users.filter((u) => u.id !== userId && now - u.lastSeen < 60000);
+        await kv.put(`users:${roomName}`, JSON.stringify(users), { expirationTtl: 86400 });
+        return { roomName, remainingUsers: users.map((u) => ({ id: u.id, name: u.name })) };
+      } catch {
+        // fallback
+      }
+      const remaining = getRoomUsers(roomName) as Array<{ id: string; name: string }>;
+      return { roomName, remainingUsers: remaining };
+    })();
+  }
+  const remaining = getRoomUsers(roomName) as Array<{ id: string; name: string }>;
   return { roomName, remainingUsers: remaining };
 }
 
-export function getRoomUsers(roomName: string): Array<{ id: string; name: string }> {
+export function getRoomUsers(
+  roomName: string,
+  kv?: any
+): Promise<Array<{ id: string; name: string }>> | Array<{ id: string; name: string }> {
+  if (kv) {
+    return (async () => {
+      try {
+        const users: Array<{ id: string; name: string; lastSeen: number }> =
+          (await kv.get(`users:${roomName}`, 'json')) || [];
+        const now = Date.now();
+        const active = users.filter((u) => now - u.lastSeen < 60000);
+        if (active.length > 0) {
+          return active.map((u) => ({ id: u.id, name: u.name }));
+        }
+      } catch {
+        // fallback
+      }
+      const map = new Map<string, string>();
+      for (const session of sessions.values()) {
+        if (session.roomName === roomName) {
+          map.set(session.userId, session.userName);
+        }
+      }
+      return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    })();
+  }
   const map = new Map<string, string>();
   for (const session of sessions.values()) {
     if (session.roomName === roomName) {
@@ -312,19 +378,60 @@ export function getRoomUsers(roomName: string): Array<{ id: string; name: string
   return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
 }
 
-export function addMessage(roomName: string, message: StoredMessage): void {
+export function addMessage(
+  roomName: string,
+  message: StoredMessage,
+  kv?: any
+): Promise<void> | void {
   let list = messageHistories.get(roomName);
   if (!list) {
     list = [];
     messageHistories.set(roomName, list);
   }
-  list.push(message);
+  if (!list.some((m) => m.id === message.id)) {
+    list.push(message);
+  }
   if (list.length > 100) {
     list.splice(0, list.length - 100);
   }
+  if (kv) {
+    return (async () => {
+      try {
+        const kvList = (await kv.get(`messages:${roomName}`, 'json')) as StoredMessage[] | null;
+        let merged = Array.isArray(kvList) ? kvList : [];
+        if (!merged.some((m) => m.id === message.id)) {
+          merged.push(message);
+        }
+        if (merged.length > 100) {
+          merged.splice(0, merged.length - 100);
+        }
+        messageHistories.set(roomName, merged);
+        await kv.put(`messages:${roomName}`, JSON.stringify(merged), { expirationTtl: 86400 });
+      } catch {
+        // KV storage fallback
+      }
+    })();
+  }
 }
 
-export function getMessageHistory(roomName: string): StoredMessage[] {
+export function getMessageHistory(
+  roomName: string,
+  kv?: any
+): Promise<StoredMessage[]> | StoredMessage[] {
+  if (kv) {
+    return (async () => {
+      try {
+        const kvList = (await kv.get(`messages:${roomName}`, 'json')) as StoredMessage[] | null;
+        if (Array.isArray(kvList)) {
+          messageHistories.set(roomName, kvList);
+          return kvList;
+        }
+      } catch {
+        // KV storage fallback
+      }
+      return messageHistories.get(roomName) || [];
+    })();
+  }
   return messageHistories.get(roomName) || [];
 }
 
