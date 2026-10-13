@@ -70,4 +70,18 @@ describe('Client API Module Unit Tests', () => {
 
     await expect(verifyRoomPassword('vault', 'bad-pass')).rejects.toThrow(ERROR_CODES.WRONG_PASSWORD);
   });
+
+  it('getApiUrl returns relative path on non-localhost deployed environments', async () => {
+    const originalLocation = window.location;
+    // @ts-expect-error test override
+    delete window.location;
+    window.location = { ...originalLocation, hostname: 'cipherchat-av9.pages.dev' } as Location;
+
+    // With no env override, non-localhost hostnames should return empty string for relative paths
+    const { getApiUrl } = await import('../../src/lib/api');
+    expect(getApiUrl()).toBe('');
+
+    window.location = originalLocation;
+  });
 });
+

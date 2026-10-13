@@ -1,7 +1,46 @@
 import { RoomCreateResponse, RoomVerifyResponse } from '../types';
 import { ERROR_CODES } from './errors';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+/**
+ * Resolves the backend base URL dynamically.
+ * Priority:
+ * 1. Explicit VITE_API_URL or VITE_SERVER_URL environment variable
+ * 2. When running in a deployed browser session (non-localhost), use relative paths (same origin)
+ * 3. Default to local dev server (http://localhost:3001)
+ */
+export function getApiUrl(): string {
+  // If running in a deployed browser session (non-localhost hostname):
+  // Never connect to localhost:3001 unless explicitly overridden by a non-localhost URL.
+  if (typeof window !== 'undefined' && window.location) {
+    const isLocal =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      const configured =
+        (typeof import.meta !== 'undefined' &&
+          (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_SERVER_URL)) ||
+        '';
+      if (
+        configured &&
+        !configured.includes('localhost') &&
+        !configured.includes('127.0.0.1')
+      ) {
+        return configured.replace(/\/+$/, '');
+      }
+      return '';
+    }
+  }
+
+  const envUrl =
+    (typeof import.meta !== 'undefined' &&
+      (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_SERVER_URL)) ||
+    '';
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  return 'http://localhost:3001';
+}
 
 interface RequestOptions extends RequestInit {
   json?: unknown;
@@ -20,9 +59,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     fetchOptions.body = JSON.stringify(json);
   }
 
+  const baseUrl = getApiUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await fetch(`${baseUrl}${path}`, {
       ...fetchOptions,
       headers,
     });

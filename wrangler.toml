@@ -3,8 +3,12 @@ name = "cipherchat"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "./dist"
 
+[[kv_namespaces]]
+binding = "CIPHERCHAT_KV"
+id = "a45f3c1f7fd441f8847b57b8abaa9238"
+
 [vars]
-# Production backend API & Socket.IO relay URL
-# Override this variable in the Cloudflare Pages Dashboard (Settings -> Environment Variables)
-# or when deploying with: wrangler pages secret put VITE_SERVER_URL
+# Production backend API & Socket.IO relay URL (optional)
+# When left empty, CipherChat uses edge-native Cloudflare Pages Functions
 VITE_SERVER_URL = ""
+

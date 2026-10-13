@@ -5,8 +5,39 @@ import { User, Message, TypingUser, JoinRoomPayload, TypingPayload, FileUploadRe
 import { encryptMessage, decryptMessage, encryptFileBuffer } from '../lib/crypto';
 import DOMPurify from 'dompurify';
 import { ERROR_CODES, ERROR_MESSAGES } from '../lib/errors';
+import { getApiUrl } from '../lib/api';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+export const getSocketUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location) {
+    const isLocal =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      const configured =
+        (typeof import.meta !== 'undefined' &&
+          (import.meta.env?.VITE_SOCKET_URL || import.meta.env?.VITE_SERVER_URL)) ||
+        '';
+      if (
+        configured &&
+        !configured.includes('localhost') &&
+        !configured.includes('127.0.0.1')
+      ) {
+        return configured.replace(/\/+$/, '');
+      }
+      return window.location.origin;
+    }
+  }
+
+  const envUrl =
+    (typeof import.meta !== 'undefined' &&
+      (import.meta.env?.VITE_SOCKET_URL || import.meta.env?.VITE_SERVER_URL)) ||
+    '';
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  return 'http://localhost:3001';
+};
 
 export const useSocketChat = (currentUser: User | null, roomName: string): {
   sendMessage: (text: string, file?: File) => Promise<void>;
@@ -32,7 +63,8 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
     if (!currentUser) return;
 
     // Create socket connection
-    const socket = io(SOCKET_URL, {
+    const socketUrl = getSocketUrl();
+    const socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 3,
@@ -283,8 +315,9 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
           headers['x-room-password'] = activePassword;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${API_URL}/api/files/upload`, {
+        const baseUrl = getApiUrl();
+        const uploadUrl = baseUrl ? `${baseUrl}/api/files/upload` : '/api/files/upload';
+        const response = await fetch(uploadUrl, {
           method: 'POST',
           headers,
           body: formData,
@@ -301,7 +334,11 @@ export const useSocketChat = (currentUser: User | null, roomName: string): {
         const data: FileUploadResponse = await response.json();
         if (data?.url) {
           // Store relative URL path to prevent external domain injection
-          mediaUrl = data.url.startsWith('http') ? data.url : `${API_URL}${data.url}`;
+          mediaUrl = data.url.startsWith('http')
+            ? data.url
+            : baseUrl
+            ? `${baseUrl}${data.url}`
+            : data.url;
           mediaType = data.mediaType;
         }
         fileName = file.name;

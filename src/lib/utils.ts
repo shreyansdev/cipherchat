@@ -59,7 +59,10 @@ export const isSafeInternalMediaUrl = (url?: string): boolean => {
     }
 
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-    const apiUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL;
+    const apiUrl =
+      typeof import.meta !== 'undefined'
+        ? import.meta.env?.VITE_API_URL || import.meta.env?.VITE_SERVER_URL
+        : '';
     const allowedOrigins = [currentOrigin, 'http://localhost:3001', 'http://127.0.0.1:3001'];
     if (apiUrl) {
       try {

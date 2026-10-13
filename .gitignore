@@ -64,4 +64,6 @@ DESIGN.md
 GEMINI.md
 REFACTORING_LOG.md
 scripts/capture_screenshots.js
+_worker.bundle
+videos/
 
