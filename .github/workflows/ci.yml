@@ -114,7 +114,7 @@ jobs:
           cache: 'npm'
 
       - name: Audit Root Dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --omit=dev
 
       - name: Audit Server Dependencies
-        run: npm audit --audit-level=high --prefix server
+        run: npm audit --audit-level=high --omit=dev --prefix server

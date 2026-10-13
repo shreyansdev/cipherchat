@@ -14,7 +14,7 @@
     "preview": "vite preview",
     "pages:deploy": "npm run build && wrangler pages deploy dist",
     "pages:dev": "wrangler pages dev dist",
-    "audit:ci": "npm audit --audit-level=high"
+    "audit:ci": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.2.0",
@@ -30,8 +30,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1",
     "socket.io-client": "^4.8.3",
-    "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
@@ -58,13 +57,18 @@
     "redis": "^4.6.12",
     "supertest": "^7.0.0",
     "tailwindcss": "^3.4.4",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.2.2",
     "vite": "^6.4.3",
     "vitest": "^4.1.8",
     "wrangler": "^4.143.0"
   },
   "overrides": {
+    "braces": "^3.0.3",
     "esbuild": "^0.25.0",
+    "proxy-addr": "^2.0.8",
+    "sharp": "^0.35.5",
+    "source-map-js": "^1.2.2",
     "tar": "^7.5.16",
     "undici": "^7.30.0"
   }

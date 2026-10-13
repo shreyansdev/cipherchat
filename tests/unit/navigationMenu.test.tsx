@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import '@testing-library/jest-dom';
 import { AnimatedNavFramer } from '../../src/components/ui/navigation-menu';
-import { Button } from '../../src/components/ui/button';
-import { Input } from '../../src/components/ui/input';
-import { Label } from '../../src/components/ui/label';
+import { Button } from '../../src/components/ui/Button';
+import { Input } from '../../src/components/ui/Input';
+import { Label } from '../../src/components/ui/Label';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '../../src/components/ui/sheet';
 
 // Mock framer-motion useScroll and useMotionValueEvent
