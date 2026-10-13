@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Lock, Smile, Paperclip, X } from 'lucide-react';
-import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData, Theme, EmojiStyle } from 'emoji-picker-react';
 import Button from '../ui/Button';
 
 interface MessageInputProps {
@@ -15,6 +15,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
   const typingTimeoutRef = useRef<number | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +53,16 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
-    setText(prev => prev + emojiData.emoji);
+    if (emojiData?.emoji) {
+      setText(prev => prev + emojiData.emoji);
+      if (onTyping) {
+        onTyping(true);
+      }
+    }
     setShowEmojiPicker(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +87,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
   // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (emojiPickerRef.current && event.target instanceof Node && !emojiPickerRef.current.contains(event.target)) {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      // Do not close if clicking inside the emoji picker container
+      if (target.closest('.EmojiPickerReact') || target.closest('[data-emoji-picker]')) {
+        return;
+      }
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(target)) {
         setShowEmojiPicker(false);
       }
     };
@@ -128,6 +143,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
         <div className="flex-1 relative min-w-0">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400/70 pointer-events-none" aria-hidden="true" />
           <input
+            ref={inputRef}
             id="chat-message-input"
             name="chat-message"
             type="text"
@@ -156,11 +172,13 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           </Button>
           
           {showEmojiPicker && (
-            <div className="fixed sm:absolute bottom-16 sm:bottom-14 left-2 right-2 sm:left-auto sm:right-0 z-50 flex justify-center sm:block">
+            <div className="fixed sm:absolute bottom-16 sm:bottom-14 left-2 right-2 sm:left-auto sm:right-0 z-50 flex justify-center sm:block" data-emoji-picker>
               <div className="shadow-2xl rounded-2xl overflow-hidden border border-cyan-500/40 max-w-[calc(100vw-1.5rem)]">
                 <EmojiPicker
                   onEmojiClick={handleEmojiClick}
                   theme={Theme.DARK}
+                  emojiStyle={EmojiStyle.NATIVE}
+                  lazyLoadEmojis={true}
                   searchPlaceHolder="Search emoji…"
                   width={typeof window !== 'undefined' && window.innerWidth < 360 ? 280 : 320}
                   height={Math.min(380, typeof window !== 'undefined' ? window.innerHeight - 150 : 380)}

@@ -107,7 +107,9 @@ const ChatPage: React.FC = () => {
         setShowPasswordModal(true);
         setIsLoading(false);
       } else {
-        navigate(`/chat/${roomName}`, { state: { displayName: displayNameInput.trim() } });
+        await setupEncryption('', roomName!);
+        const userId = `user-${Math.random().toString(36).substring(2, 9)}`;
+        setCurrentUser({ id: userId, name: displayNameInput.trim() });
         setNeedsDisplayName(false);
       }
     } catch (err) {
