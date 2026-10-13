@@ -43,7 +43,7 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -12, transition: { duration: 0.15 } }}
     transition={{ duration: 0.25, ease: 'easeOut' }}
-    className="p-6 sm:p-8 space-y-6"
+    className="p-5 sm:p-8 space-y-5 sm:space-y-6"
   >
     {/* Cyber Emblem Badge */}
     <div className="flex justify-center relative">
@@ -58,11 +58,11 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
 
     {/* Title Section */}
     <div className="text-center space-y-2.5">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-mono text-cyber-cyan tracking-wider">
-        <Sparkles className="h-3 w-3 animate-spin" style={{ animationDuration: '6s' }} aria-hidden="true" />
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] sm:text-[11px] font-mono text-cyber-cyan tracking-wider max-w-full flex-wrap justify-center">
+        <Sparkles className="h-3 w-3 animate-spin flex-shrink-0" style={{ animationDuration: '6s' }} aria-hidden="true" />
         <span>ZERO-KNOWLEDGE PROTOCOL v2.4</span>
       </div>
-      <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono">
+      <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-mono">
         <span className="text-cyber-green">&gt;_</span> CIPHER<span className="text-cyber-cyan">CHAT</span>
       </h2>
       <p className="text-slate-400 text-xs sm:text-sm font-mono uppercase tracking-widest">
@@ -70,15 +70,15 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground font-mono pt-1">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-[11px] font-semibold">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
           <span>E2EE AES-256-GCM</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-semibold">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] sm:text-[11px] font-semibold">
           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" aria-hidden="true" />
           <span>ZERO LOGS</span>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[11px] font-semibold">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] sm:text-[11px] font-semibold">
           <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" aria-hidden="true" />
           <span>AUTO-PURGE RAM</span>
         </div>
@@ -86,30 +86,30 @@ const InitialView: React.FC<InitialViewProps> = ({ onSetMode }) => (
     </div>
 
     {/* Primary Architecture Highlights */}
-    <div className="grid grid-cols-2 gap-2.5 pt-1 font-mono text-[11px]">
-      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+    <div className="grid grid-cols-2 gap-2 sm:gap-2.5 pt-1 font-mono text-[10px] sm:text-[11px]">
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-2.5 sm:p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
         <div className="text-cyber-green font-bold flex items-center gap-1">
           <span>&gt;</span> CLIENT CRYPTO
         </div>
-        <div className="text-slate-400 text-[10px] mt-0.5">PBKDF2 SHA-256 key</div>
+        <div className="text-slate-400 text-[9px] sm:text-[10px] mt-0.5">PBKDF2 SHA-256 key</div>
       </div>
-      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-2.5 sm:p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
         <div className="text-cyber-cyan font-bold flex items-center gap-1">
           <span>&gt;</span> EPHEMERAL TTL
         </div>
-        <div className="text-slate-400 text-[10px] mt-0.5">Automated eviction</div>
+        <div className="text-slate-400 text-[9px] sm:text-[10px] mt-0.5">Automated eviction</div>
       </div>
-      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-2.5 sm:p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
         <div className="text-purple-400 font-bold flex items-center gap-1">
           <span>&gt;</span> ZERO ACCOUNTS
         </div>
-        <div className="text-slate-400 text-[10px] mt-0.5">No login / No cookies</div>
+        <div className="text-slate-400 text-[9px] sm:text-[10px] mt-0.5">No login / No cookies</div>
       </div>
-      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
+      <div className="bg-[#080b10]/70 border border-cyan-500/20 rounded-xl p-2.5 sm:p-3 hover:border-cyan-500/50 hover:bg-[#080b10] transition-all group">
         <div className="text-amber-400 font-bold flex items-center gap-1">
           <span>&gt;</span> REDIS VOLATILE
         </div>
-        <div className="text-slate-400 text-[10px] mt-0.5">No disk persistence</div>
+        <div className="text-slate-400 text-[9px] sm:text-[10px] mt-0.5">No disk persistence</div>
       </div>
     </div>
 
@@ -509,7 +509,7 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                   </span>
                   <span className="text-cyber-amber text-[10px]">AUTO-PURGE FROM RAM</span>
                 </Label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { label: '1 HOUR', seconds: 3600 },
                     { label: '6 HOURS', seconds: 21600 },
@@ -520,7 +520,7 @@ const FormView: React.FC<FormViewProps> = ({ mode, onBack }) => {
                       key={option.seconds}
                       type="button"
                       onClick={() => setTtl(option.seconds)}
-                      className={`font-mono text-xs py-2.5 px-2 rounded-xl border transition-all text-center ${
+                      className={`font-mono text-[11px] sm:text-xs py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-xl border transition-all text-center ${
                         ttl === option.seconds
                           ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.25)] font-bold'
                           : 'bg-[#080b10]/60 border-cyan-500/20 text-slate-400 hover:border-cyan-500/50 hover:text-slate-200'

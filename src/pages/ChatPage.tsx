@@ -142,19 +142,19 @@ const ChatPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-[#0a101a]/90 backdrop-blur-2xl border border-cyan-500/35 rounded-2xl p-6 sm:p-8 relative z-10 shadow-[0_0_50px_rgba(0,240,255,0.14)]"
+          className="w-full max-w-md bg-[#0a101a]/90 backdrop-blur-2xl border border-cyan-500/35 rounded-2xl p-5 sm:p-8 relative z-10 shadow-[0_0_50px_rgba(0,240,255,0.14)]"
         >
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto mb-4 shadow-[0_0_25px_rgba(0,255,101,0.25)]">
-              <Shield className="h-8 w-8 text-cyber-green animate-pulse" aria-hidden="true" />
+          <div className="text-center mb-5 sm:mb-6">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 border border-emerald-500/40 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-[0_0_25px_rgba(0,255,101,0.25)]">
+              <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-cyber-green animate-pulse" aria-hidden="true" />
             </div>
-            <h2 className="text-2xl font-bold text-white uppercase tracking-wider">[JOIN CHANNEL]</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-wider">[JOIN CHANNEL]</h2>
             <div className="inline-block mt-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyber-cyan text-xs font-semibold">
               #{roomName}
             </div>
           </div>
 
-          <form onSubmit={handleDirectJoin} className="space-y-5">
+          <form onSubmit={handleDirectJoin} className="space-y-4 sm:space-y-5">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="direct-displayName" className="text-xs text-cyber-green uppercase tracking-widest cursor-pointer font-bold">
@@ -192,7 +192,7 @@ const ChatPage: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading || !displayNameInput.trim()}
-              className="w-full h-12 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.35)] font-bold transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
+              className="w-full h-11 sm:h-12 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(0,255,101,0.35)] font-bold transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
             >
               {isLoading ? '[CONNECTING…]' : '[CONNECT NOW]'}
             </Button>
@@ -221,10 +221,10 @@ const ChatPage: React.FC = () => {
 
   if (!encryptionKey && !needsDisplayName) {
     return (
-      <div className="flex h-screen items-center justify-center bg-transparent text-cyber-cyan font-mono">
-        <div className="flex items-center gap-3 p-5 rounded-2xl bg-[#0a101a]/90 backdrop-blur-xl border border-cyan-500/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] animate-pulse">
-          <RefreshCw className="h-5 w-5 animate-spin text-cyber-green" aria-hidden="true" />
-          <span className="font-bold tracking-wide">[INITIALIZING SECURE CHANNEL &amp; DERIVING KEYS…]</span>
+      <div className="flex h-screen items-center justify-center bg-transparent text-cyber-cyan font-mono p-4 text-center">
+        <div className="flex items-center gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-2xl bg-[#0a101a]/90 backdrop-blur-xl border border-cyan-500/40 shadow-[0_0_40px_rgba(0,240,255,0.2)] animate-pulse max-w-sm sm:max-w-md">
+          <RefreshCw className="h-5 w-5 animate-spin text-cyber-green shrink-0" aria-hidden="true" />
+          <span className="font-bold tracking-wide text-xs sm:text-sm">[INITIALIZING SECURE CHANNEL &amp; DERIVING KEYS…]</span>
         </div>
       </div>
     );
@@ -308,9 +308,9 @@ const ChatPage: React.FC = () => {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 20, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4"
+            className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[calc(100vw-1.5rem)] sm:max-w-sm px-2 sm:px-4"
           >
-            <div className={`p-4 rounded-xl border shadow-2xl flex items-center gap-3 font-mono text-sm backdrop-blur-xl ${
+            <div className={`p-3.5 sm:p-4 rounded-xl border shadow-2xl flex items-center gap-2.5 sm:gap-3 font-mono text-sm backdrop-blur-xl ${
               state.connectionStatus === 'failed' || state.error === 'CONNECTION_LOST'
                 ? 'bg-destructive/95 border-destructive text-white' 
                 : 'bg-[#080d16]/95 border-cyan-500/40 text-cyan-300'

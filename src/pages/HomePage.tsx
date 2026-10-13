@@ -118,8 +118,8 @@ export const HomePage: React.FC = () => {
       </main>
 
       {/* Application Footer */}
-      <footer className="w-full border-t border-cyan-500/20 bg-[#030509]/90 backdrop-blur-md py-12 text-slate-400 font-mono text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="w-full border-t border-cyan-500/20 bg-[#030509]/90 backdrop-blur-md py-8 sm:py-12 text-slate-400 font-mono text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-md bg-cyan-500/10 border border-cyan-400/40 flex items-center justify-center text-cyber-cyan">
               <Shield className="h-3.5 w-3.5" aria-hidden="true" />
@@ -129,7 +129,7 @@ export const HomePage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-6 text-[11px] text-slate-400">
             <span className="text-cyber-green">● E2EE AES-256-GCM</span>
             <span className="text-cyber-cyan">● PBKDF2 310K ITERATIONS</span>
             <span className="text-purple-400">● 100% IN-MEMORY REDIS</span>

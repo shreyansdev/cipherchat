@@ -211,13 +211,13 @@ export const ProtocolPipeline: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.22 }}
-            className="p-6 sm:p-8 rounded-2xl bg-[#090e18]/90 border border-cyan-500/30 shadow-[0_0_40px_rgba(0,240,255,0.08)] relative overflow-hidden"
+            className="p-4 sm:p-6 lg:p-8 rounded-2xl bg-[#090e18]/90 border border-cyan-500/30 shadow-[0_0_40px_rgba(0,240,255,0.08)] relative overflow-hidden"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
               {/* Left Column: Spec Analysis */}
               <div className="lg:col-span-6 space-y-5">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className={`text-xs px-2.5 py-0.5 rounded-full ${activeStep.bgTint} border ${activeStep.borderTint} ${activeStep.accentColor} font-bold`}>
                       PHASE {activeStep.stepNumber} SPECIFICATION
                     </span>
@@ -225,11 +225,11 @@ export const ProtocolPipeline: React.FC = () => {
                       Standard: {activeStep.standard}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-white">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
                     {activeStep.title}: {activeStep.shortDesc}
                   </h3>
                   <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                    <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>Cryptographic Assurance: {activeStep.guarantee}</span>
                   </p>
                 </div>
@@ -237,13 +237,13 @@ export const ProtocolPipeline: React.FC = () => {
                 <div className="space-y-2.5 text-xs text-slate-300 leading-relaxed">
                   {activeStep.details.map((detail, idx) => (
                     <div key={idx} className="flex items-start gap-2.5">
-                      <span className="text-cyber-cyan font-bold mt-0.5">&gt;</span>
+                      <span className="text-cyber-cyan font-bold mt-0.5 shrink-0">&gt;</span>
                       <span>{detail}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
                   <div className="p-3 rounded-xl bg-[#03060c] border border-cyan-500/20">
                     <div className="text-[10px] text-slate-500 uppercase">Algorithm Primitive</div>
                     <div className="text-white font-bold mt-0.5">{activeStep.algorithm}</div>

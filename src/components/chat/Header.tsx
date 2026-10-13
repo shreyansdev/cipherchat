@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" aria-hidden="true" />
 
       {/* Left side: Back navigation & Room Details */}
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
         <Button
           variant="ghost"
           size="icon"
@@ -44,23 +44,23 @@ const Header: React.FC<HeaderProps> = ({
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
 
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 border border-emerald-500/40 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(0,255,101,0.2)]">
             <Shield className="h-4 w-4 text-cyber-green animate-pulse" aria-hidden="true" />
           </div>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="font-mono text-sm sm:text-base font-bold text-white truncate flex items-center gap-1">
-                <span className="text-cyber-cyan">#</span>
-                <span>{roomName}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="font-mono text-xs sm:text-base font-bold text-white truncate flex items-center gap-0.5 sm:gap-1 max-w-[100px] xs:max-w-[150px] sm:max-w-[240px] md:max-w-none">
+                <span className="text-cyber-cyan shrink-0">#</span>
+                <span className="truncate">{roomName}</span>
               </h1>
               <button
                 type="button"
                 onClick={handleCopyLink}
                 title="Copy Room URL"
                 aria-label="Copy Room URL"
-                className="p-1 text-slate-400 hover:text-cyber-cyan hover:bg-cyan-500/10 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+                className="p-1 sm:p-1.5 text-slate-400 hover:text-cyber-cyan hover:bg-cyan-500/10 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shrink-0"
               >
                 {copied ? (
                   <Check className="h-3.5 w-3.5 text-cyber-green" aria-hidden="true" />
@@ -70,8 +70,8 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-              <div className="flex items-center gap-1 text-emerald-400 font-semibold">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-slate-400 font-mono">
+              <div className="flex items-center gap-1 text-emerald-400 font-semibold shrink-0">
                 <Lock className="h-2.5 w-2.5" aria-hidden="true" />
                 <span>AES-256-GCM</span>
               </div>

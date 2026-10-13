@@ -122,18 +122,18 @@ export const CryptoPlayground: React.FC = () => {
 
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-cyan-500/20 gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyber-cyan shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyber-cyan shadow-[0_0_15px_rgba(0,240,255,0.2)] shrink-0">
             <Terminal className="h-4 w-4" aria-hidden="true" />
           </div>
-          <div>
-            <h3 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+          <div className="min-w-0">
+            <h3 className="text-xs sm:text-base font-bold text-white tracking-wide flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span>LIVE CRYPTOGRAPHIC ENGINE</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
                 ACTIVE
               </span>
             </h3>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[10px] sm:text-[11px] text-slate-400 truncate sm:whitespace-normal">
               Interactive Web Crypto Subtle API Sandbox • Zero Server Plaintext Proof
             </p>
           </div>
@@ -142,7 +142,7 @@ export const CryptoPlayground: React.FC = () => {
         <button
           type="button"
           onClick={handleRandomizeMessage}
-          className="text-[11px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 flex items-center gap-1.5 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+          className="text-[11px] px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 flex items-center gap-1.5 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shrink-0 self-start sm:self-auto"
           aria-label="Load random encrypted message"
         >
           <Sparkles className="h-3 w-3 text-cyber-cyan" aria-hidden="true" />
@@ -239,16 +239,16 @@ export const CryptoPlayground: React.FC = () => {
 
       {/* Dual Perspective Comparison Switcher */}
       <div className="mt-4 pt-4 border-t border-cyan-500/20 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
           <div className="text-xs text-slate-300 font-bold uppercase tracking-wider">
             Dual-Perspective Cryptographic Inspection:
           </div>
 
-          <div className="inline-flex rounded-lg bg-[#040810] p-1 border border-cyan-500/30">
+          <div className="inline-flex w-full sm:w-auto rounded-lg bg-[#040810] p-1 border border-cyan-500/30">
             <button
               type="button"
               onClick={() => setViewMode('server')}
-              className={`px-3 py-1 rounded-md text-xs font-mono font-bold transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-xs font-mono font-bold transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none text-center ${
                 viewMode === 'server'
                   ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/50 shadow-[0_0_15px_rgba(0,240,255,0.2)]'
                   : 'text-slate-400 hover:text-slate-200'
@@ -259,7 +259,7 @@ export const CryptoPlayground: React.FC = () => {
             <button
               type="button"
               onClick={() => setViewMode('peer')}
-              className={`px-3 py-1 rounded-md text-xs font-mono font-bold transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-xs font-mono font-bold transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none text-center ${
                 viewMode === 'peer'
                   ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/50 shadow-[0_0_15px_rgba(0,255,101,0.2)]'
                   : 'text-slate-400 hover:text-slate-200'
@@ -281,15 +281,15 @@ export const CryptoPlayground: React.FC = () => {
               transition={{ duration: 0.18 }}
               className="p-3.5 rounded-xl bg-[#04070d] border border-cyan-500/30 space-y-2"
             >
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-cyan-400 font-bold flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-cyan-400" aria-hidden="true" />
-                  <span>BLIND NETWORK PACKET RELAYED TO REDIS RAM:</span>
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="text-cyan-400 font-bold flex items-center gap-1.5 min-w-0">
+                  <Lock className="h-3.5 w-3.5 text-cyan-400 shrink-0" aria-hidden="true" />
+                  <span className="truncate sm:whitespace-normal">BLIND NETWORK PACKET RELAYED TO REDIS RAM:</span>
                 </span>
                 <button
                   type="button"
                   onClick={handleCopyCipher}
-                  className="text-[10px] text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+                  className="text-[10px] text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shrink-0"
                   aria-label="Copy raw ciphertext hex"
                 >
                   {copiedCipher ? (
@@ -310,12 +310,12 @@ export const CryptoPlayground: React.FC = () => {
                 <span className="text-emerald-400 font-bold" title="Auth Tag">{authTagHex}</span>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 pt-1 gap-1">
                 <span className="text-emerald-400/90 font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
-                  Zero server plaintext • Zero key storage • Ephemeral RAM TTL only
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" aria-hidden="true" />
+                  <span>Zero server plaintext • Zero key storage • Ephemeral RAM TTL only</span>
                 </span>
-                <span className="text-slate-500 font-mono">Format: [IV:Ciphertext:Tag]</span>
+                <span className="text-slate-500 font-mono shrink-0">Format: [IV:Ciphertext:Tag]</span>
               </div>
             </motion.div>
           ) : (
@@ -327,12 +327,12 @@ export const CryptoPlayground: React.FC = () => {
               transition={{ duration: 0.18 }}
               className="p-3.5 rounded-xl bg-[#04070d] border border-emerald-500/30 space-y-2"
             >
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
-                  <span>AUTHENTICATED IN-BROWSER DECRYPTION:</span>
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5 min-w-0">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+                  <span className="truncate sm:whitespace-normal">AUTHENTICATED IN-BROWSER DECRYPTION:</span>
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">
                   GCM Verified
                 </span>
               </div>
@@ -345,12 +345,12 @@ export const CryptoPlayground: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 pt-1 gap-1">
                 <span className="text-cyan-400/90 font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" aria-hidden="true" />
-                  Decrypted locally with PBKDF2 room key • Never stored on disk
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" aria-hidden="true" />
+                  <span>Decrypted locally with PBKDF2 room key • Never stored on disk</span>
                 </span>
-                <span className="text-slate-500 font-mono">Latency: &lt; 0.4ms</span>
+                <span className="text-slate-500 font-mono shrink-0">Latency: &lt; 0.4ms</span>
               </div>
             </motion.div>
           )}

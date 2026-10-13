@@ -112,19 +112,23 @@ export const FeatureMatrix: React.FC = () => {
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-cyan-500/30 bg-[#090f18]/85 shadow-[0_0_30px_rgba(0,240,255,0.06)]">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b border-cyan-500/30 bg-[#05080e] text-slate-400 font-bold">
-                  <th scope="col" className="p-4 sm:p-5">Security Vector</th>
-                  <th scope="col" className="p-4 sm:p-5 text-emerald-400 bg-emerald-500/10 border-x border-emerald-500/30">
-                    &gt;_ CipherChat
-                  </th>
-                  <th scope="col" className="p-4 sm:p-5">Signal</th>
-                  <th scope="col" className="p-4 sm:p-5">Telegram</th>
-                  <th scope="col" className="p-4 sm:p-5">Discord / Slack</th>
-                </tr>
-              </thead>
+          <div className="space-y-2">
+            <div className="flex sm:hidden items-center justify-end gap-1.5 text-[10px] text-cyan-400/80 font-mono">
+              <span>&larr; Swipe horizontally to compare &rarr;</span>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-cyan-500/30 bg-[#090f18]/85 shadow-[0_0_30px_rgba(0,240,255,0.06)]">
+              <table className="w-full min-w-[660px] sm:min-w-[720px] text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b border-cyan-500/30 bg-[#05080e] text-slate-400 font-bold">
+                    <th scope="col" className="p-3.5 sm:p-5">Security Vector</th>
+                    <th scope="col" className="p-3.5 sm:p-5 text-emerald-400 bg-emerald-500/10 border-x border-emerald-500/30">
+                      &gt;_ CipherChat
+                    </th>
+                    <th scope="col" className="p-3.5 sm:p-5">Signal</th>
+                    <th scope="col" className="p-3.5 sm:p-5">Telegram</th>
+                    <th scope="col" className="p-3.5 sm:p-5">Discord / Slack</th>
+                  </tr>
+                </thead>
               <tbody className="divide-y divide-cyan-500/15 text-slate-300">
                 <tr className="hover:bg-cyan-500/5 transition-colors">
                   <td className="p-4 sm:p-5 font-semibold text-white">No Account / Phone # Required</td>
@@ -179,7 +183,8 @@ export const FeatureMatrix: React.FC = () => {
             </table>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
     </>
   );
 };

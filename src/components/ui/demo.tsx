@@ -9,18 +9,18 @@ export default function DemoPage() {
 
       <main className="container mx-auto px-4">
         {/* Hero Section */}
-        <div className="h-screen pt-32 flex flex-col items-center justify-center text-center max-w-3xl mx-auto">
+        <div className="min-h-screen pt-28 pb-16 sm:pt-36 sm:pb-24 flex flex-col items-center justify-center text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-xs tracking-wider mb-6 animate-pulse">
             <Sparkles className="h-3.5 w-3.5" />
             <span>FRAMER MOTION INTERACTION</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight font-mono text-white">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-mono text-white leading-tight">
             Navigation with <span className="text-cyan-400">Framer Motion</span>
           </h1>
-          <p className="text-muted-foreground mt-6 text-base sm:text-lg leading-relaxed max-w-xl">
+          <p className="text-muted-foreground mt-6 text-sm sm:text-lg leading-relaxed max-w-xl">
             Scroll down to see the magic. The pill navbar fluidly collapses into a compact floating icon. Click the circle to expand it back.
           </p>
-          <div className="mt-8 flex items-center gap-3 text-xs font-mono text-slate-400">
+          <div className="mt-8 flex flex-wrap justify-center items-center gap-2.5 sm:gap-3 text-xs font-mono text-slate-400">
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-muted border border-border">
               <Zap className="h-3.5 w-3.5 text-cyan-400" /> Smooth Physics
             </span>
@@ -31,7 +31,7 @@ export default function DemoPage() {
         </div>
 
         {/* Extended Scroll Content Section with Unsplash Stock Images & Lucide icons */}
-        <div className="min-h-[200vh] bg-muted/40 border border-border rounded-2xl p-6 sm:p-12 mb-24 space-y-12 backdrop-blur-sm">
+        <div className="min-h-[200vh] bg-muted/40 border border-border rounded-2xl p-4 sm:p-8 lg:p-12 mb-16 sm:mb-24 space-y-8 sm:space-y-12 backdrop-blur-sm">
           <div className="border-b border-border/80 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold font-mono text-white flex items-center gap-2">

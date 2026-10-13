@@ -102,21 +102,21 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
   }, []);
 
   return (
-    <div className="p-3 sm:p-4 border-t border-cyan-500/20 bg-[#080d16]/95 backdrop-blur-xl relative z-10 font-mono">
+    <div className="p-2.5 sm:p-4 border-t border-cyan-500/20 bg-[#080d16]/95 backdrop-blur-xl relative z-10 font-mono">
       {/* Top laser accent line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" aria-hidden="true" />
       
       {/* File preview chip */}
       {selectedFile && (
-        <div className="mb-3 flex items-center gap-2 px-3.5 py-2 bg-[#040810]/95 border border-cyan-500/40 rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.15)]">
-          <Paperclip className="h-4 w-4 text-cyber-cyan" aria-hidden="true" />
-          <span className="text-xs font-mono text-slate-200 flex-1 truncate font-semibold">
+        <div className="mb-2.5 flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-[#040810]/95 border border-cyan-500/40 rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.15)] min-w-0">
+          <Paperclip className="h-4 w-4 text-cyber-cyan shrink-0" aria-hidden="true" />
+          <span className="text-xs font-mono text-slate-200 flex-1 min-w-0 truncate font-semibold">
             {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)}&nbsp;KB)
           </span>
           <button
             type="button"
             onClick={removeFile}
-            className="p-1 text-slate-400 hover:text-destructive transition-colors focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none rounded"
+            className="p-1 text-slate-400 hover:text-destructive transition-colors focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none rounded shrink-0"
             aria-label="Remove attached file"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -124,9 +124,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 sm:gap-3">
-        <div className="flex-1 relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-400/70 pointer-events-none" aria-hidden="true" />
+      <form onSubmit={handleSubmit} className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex-1 relative min-w-0">
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400/70 pointer-events-none" aria-hidden="true" />
           <input
             id="chat-message-input"
             name="chat-message"
@@ -138,32 +138,34 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
             spellCheck={false}
             autoComplete="off"
             aria-label="Encrypted message"
-            className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#04070d]/90 border border-cyan-500/30 text-slate-100 placeholder:text-slate-600 font-mono text-sm focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none focus:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all"
+            className="w-full h-10 sm:h-11 pl-8 sm:pl-10 pr-3 sm:pr-4 rounded-xl bg-[#04070d]/90 border border-cyan-500/30 text-slate-100 placeholder:text-slate-600 font-mono text-xs sm:text-sm focus-visible:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none focus:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all"
           />
         </div>
 
         {/* Emoji Picker Button */}
-        <div className="relative" ref={emojiPickerRef}>
+        <div className="relative shrink-0" ref={emojiPickerRef}>
           <Button
             type="button"
             size="icon"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="h-11 w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#04070d]/80 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#04070d]/80 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
             title="Emoji Picker"
             aria-label="Emoji Picker"
           >
-            <Smile className="h-5 w-5" aria-hidden="true" />
+            <Smile className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </Button>
           
           {showEmojiPicker && (
-            <div className="absolute bottom-14 right-0 z-50 shadow-2xl rounded-2xl overflow-hidden border border-cyan-500/40">
-              <EmojiPicker
-                onEmojiClick={handleEmojiClick}
-                theme={Theme.DARK}
-                searchPlaceHolder="Search emoji…"
-                width={320}
-                height={400}
-              />
+            <div className="fixed sm:absolute bottom-16 sm:bottom-14 left-2 right-2 sm:left-auto sm:right-0 z-50 flex justify-center sm:block">
+              <div className="shadow-2xl rounded-2xl overflow-hidden border border-cyan-500/40 max-w-[calc(100vw-1.5rem)]">
+                <EmojiPicker
+                  onEmojiClick={handleEmojiClick}
+                  theme={Theme.DARK}
+                  searchPlaceHolder="Search emoji…"
+                  width={typeof window !== 'undefined' && window.innerWidth < 360 ? 280 : 320}
+                  height={Math.min(380, typeof window !== 'undefined' ? window.innerHeight - 150 : 380)}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -173,11 +175,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           type="button"
           size="icon"
           onClick={() => fileInputRef.current?.click()}
-          className="h-11 w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#04070d]/80 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 text-slate-300 hover:text-cyber-cyan bg-[#04070d]/80 transition-all focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none shrink-0"
           title="Attach Encrypted File"
           aria-label="Attach Encrypted File"
         >
-          <Paperclip className="h-5 w-5" aria-hidden="true" />
+          <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
         </Button>
         <input
           ref={fileInputRef}
@@ -193,11 +195,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           type="submit" 
           size="icon" 
           disabled={!text.trim() && !selectedFile}
-          className="h-11 w-11 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/50 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(0,255,101,0.35)] disabled:opacity-30 disabled:cursor-not-allowed transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/50 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(0,255,101,0.35)] disabled:opacity-30 disabled:cursor-not-allowed transition-all focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none shrink-0"
           title="Send Encrypted Message"
           aria-label="Send Encrypted Message"
         >
-          <Send className="h-5 w-5" aria-hidden="true" />
+          <Send className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
         </Button>
       </form>
       

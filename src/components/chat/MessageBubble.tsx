@@ -162,7 +162,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} my-1.5`}
     >
-      <div className={`max-w-[88%] sm:max-w-[75%] ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+      <div className={`max-w-[92%] sm:max-w-[78%] ${isCurrentUser ? 'items-end' : 'items-start'} flex flex-col gap-1 min-w-0`}>
         {!isCurrentUser && (
           <div className="flex items-center gap-1.5 px-1.5">
             <span className={`text-xs font-mono font-bold ${getUserColor(message.user.id)}`}>
@@ -173,7 +173,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
         )}
 
         <div
-          className={`px-4 py-3 rounded-2xl font-mono text-sm relative transition-all shadow-sm ${
+          className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl font-mono text-xs sm:text-sm relative transition-all shadow-sm max-w-full min-w-0 ${
             isCurrentUser
               ? 'bg-gradient-to-br from-emerald-500/20 via-[#0c1522] to-[#080d16] border border-emerald-500/40 text-slate-100 shadow-[0_0_20px_rgba(0,255,101,0.1)] rounded-br-sm'
               : 'bg-[#090f18]/90 border border-cyan-500/25 text-slate-100 shadow-[0_0_20px_rgba(0,240,255,0.05)] rounded-bl-sm'
@@ -186,8 +186,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
                 <img
                   src={decryptedMediaUrl}
                   alt={message.fileName || 'Shared image'}
-                  className="max-w-full rounded-xl cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-                  style={{ maxHeight: '280px' }}
+                  className="max-w-full max-h-[220px] sm:max-h-[280px] object-contain rounded-xl cursor-pointer hover:scale-[1.02] transition-transform duration-300"
                   onClick={() => window.open(decryptedMediaUrl, '_blank', 'noopener,noreferrer')}
                 />
               ) : isDecryptingMedia ? (
@@ -205,13 +204,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
           )}
 
           {message.mediaUrl && message.mediaType === 'file' && isSafeInternalMediaUrl(message.mediaUrl) && (
-            <div className="mb-2.5 flex items-center gap-2.5 p-3 bg-[#040810]/80 rounded-xl border border-cyan-500/30 group hover:border-cyan-400 transition-colors">
-              <FileText className="h-4 w-4 text-cyber-cyan flex-shrink-0" aria-hidden="true" />
+            <div className="mb-2.5 flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 bg-[#040810]/80 rounded-xl border border-cyan-500/30 group hover:border-cyan-400 transition-colors min-w-0 max-w-full">
+              <FileText className="h-4 w-4 text-cyber-cyan shrink-0" aria-hidden="true" />
               <button
                 type="button"
                 onClick={handleDownloadFile}
                 disabled={isDownloading}
-                className="text-xs text-cyber-cyan hover:underline flex-1 truncate font-semibold text-left focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded"
+                className="text-xs text-cyber-cyan hover:underline flex-1 min-w-0 truncate font-semibold text-left focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded"
               >
                 {message.fileName} ({message.fileSize ? (message.fileSize / 1024).toFixed(1) : '?'} KB)
               </button>
@@ -219,7 +218,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser }) =
                 type="button"
                 onClick={handleDownloadFile}
                 disabled={isDownloading}
-                className="p-1 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded"
+                className="p-1 hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded shrink-0"
                 title="Download Decrypted File"
                 aria-label="Download Decrypted File"
               >

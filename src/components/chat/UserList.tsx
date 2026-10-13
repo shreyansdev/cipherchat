@@ -46,7 +46,7 @@ const UserList: React.FC<UserListProps> = ({ users, isSidebarOpen, onClose, onLe
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed inset-y-0 right-0 z-50 w-72 sm:w-80 lg:static lg:z-20 border-l border-cyan-500/20 bg-[#070b13]/95 backdrop-blur-2xl flex flex-col h-full shadow-[-10px_0_30px_rgba(0,0,0,0.6)] lg:shadow-none flex-shrink-0 font-mono"
+            className="fixed inset-y-0 right-0 z-50 w-[min(20rem,calc(100vw-2.5rem))] sm:w-80 lg:static lg:z-20 border-l border-cyan-500/20 bg-[#070b13]/95 backdrop-blur-2xl flex flex-col h-full shadow-[-10px_0_30px_rgba(0,0,0,0.6)] lg:shadow-none flex-shrink-0 font-mono"
           >
             {/* Header with Title + Active Count + Close Button */}
             <div className="p-4 border-b border-cyan-500/20 bg-[#040810]/70 flex items-center justify-between">
